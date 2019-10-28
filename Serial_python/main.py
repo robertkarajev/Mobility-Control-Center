@@ -5,7 +5,6 @@ weigand.py - read card IDs from a wiegand card reader
 import time as tm
 from time import sleep
 import RPi.GPIO as GPIO
-import utime
 
 CARD_MASK = 0b11111111111111110 # 16 ones
 FACILITY_MASK = 0b1111111100000000000000000 # 8 ones
@@ -38,7 +37,7 @@ class Wiegand:
 		sleep(given_time)
 		
 	def _on_pin(self, is_one, newstate):
-		now = utime.ticks_ms()
+		now = tm.time()-start
 		if self.last_bit_read is not None and now - self.last_bit_read < 2:
 		# too fast
 			return
@@ -59,7 +58,7 @@ class Wiegand:
 
 	def _cardcheck(self, t):
 		if self.last_bit_read is None: return
-		now = utime.ticks_ms()
+		now = tm.time()-start
 		if now - self.last_bit_read > 50:
 			# too slow - new start!
 			self.last_bit_read = None
