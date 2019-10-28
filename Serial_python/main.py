@@ -1,7 +1,7 @@
-"""
-weigand.py - read card IDs from a wiegand card reader
-(C) 2017 Paul Jimenez - released under LGPLv3+
-"""
+
+#weigand.py - read card IDs from a wiegand card reader
+#(C) 2017 Paul Jimenez - released under LGPLv3+
+
 import time as tm
 from time import sleep
 import RPi.GPIO as GPIO
