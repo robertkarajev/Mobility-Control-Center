@@ -2,11 +2,11 @@ from main import Wiegand
 VALID_FACILITY_CODES = [ '123']
 VALID_CARDS = [ '12345' ]
 
-GREEN_LED = Pin(...)
-RED_LED = Pin(...)
+GREEN_LED = Pin(0)
+RED_LED = Pin(1)
 
-WIEGAND_ZERO = XX  # Pin number here
-WIEGAND_ONE = YY   # Pin number here
+WIEGAND_ZERO = 0  # Pin number here
+WIEGAND_ONE = 1   # Pin number here
 
 def on_card(card_number, facility_code, cards_read):
 	if (card_number in VALID_CARDS) and (facility_code in VALID_FACILITY_CODES):

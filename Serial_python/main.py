@@ -1,4 +1,3 @@
-
 #weigand.py - read card IDs from a wiegand card reader
 #(C) 2017 Paul Jimenez - released under LGPLv3+
 
@@ -6,8 +5,8 @@ import time as tm
 from time import sleep
 import RPi.GPIO as GPIO
 
-CARD_MASK = 0b11111111111111110 # 16 ones
-FACILITY_MASK = 0b1111111100000000000000000 # 8 ones
+card_mask = 0b11111111111111110 # 16 ones
+facility_mask = 0b1111111100000000000000000 # 8 ones
 start = tm.time()
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -48,13 +47,13 @@ class Wiegand:
 	def get_card(self):
 		if self.last_card is None:
 			return None
-		return ( self.last_card & CARD_MASK ) >> 1
+		return ( self.last_card & card_mask ) >> 1
         
 	def get_facility_code(self):
 		if self.last_card is None:
 			return None
 		# Specific to standard 26bit wiegand
-		return ( self.last_card & FACILITY_MASK ) >> 17
+		return ( self.last_card & facility_mask ) >> 17
 
 	def _cardcheck(self, t):
 		if self.last_bit_read is None: return
