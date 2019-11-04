@@ -7,7 +7,7 @@ import time
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, data0 = 22, data1 = 7, *bits = ''):
+	def __init__ (self, data0 = 22, data1 = 7, bits = ''):
 		self.data0 = data0
 		self.data1 = data1
 		self.bits = bits
