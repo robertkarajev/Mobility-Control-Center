@@ -39,6 +39,8 @@ def set_procname(newname):
     libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious value 16 & arg[3..5] are zero as the man page says.
     	
 print("Read card")
+wg = Wiegand()
+
 while True:
-	if Wiegand.reading_bits() > 1:
-		print(Wiegand.reading_bits)
+	if wg.reading_bits(self) > 1:
+		print(wg.reading_bits(self))
