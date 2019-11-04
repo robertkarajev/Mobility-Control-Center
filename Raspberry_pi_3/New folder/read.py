@@ -25,7 +25,9 @@ GPIO.add_event_detect(7, GPIO.FALLING, callback=one)
 GPIO.add_event_detect(22, GPIO.FALLING, callback=zero)
 
 print ("Present Card")
-while 1:
+while True:
+	print(GPIO.input(7))
+	print(GPIO.input(22))
 	if len(bits) == 32:
 		print (25 * "-")
 		print ("32 Bit Mifare Card")
