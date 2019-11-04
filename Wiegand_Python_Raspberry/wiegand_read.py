@@ -43,9 +43,9 @@ print("Read card")
 wg = Wiegand()
 
 while True:
-	bits = wg.reading_bits()
+	bits = int(wg.reading_bits())
 	if bits > 1:
 		bits = int(wg.reading_bits(),2)
 		print(bits)
 	else:
-		bits = '0'
+		bits = 0
