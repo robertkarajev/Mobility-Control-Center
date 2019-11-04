@@ -30,7 +30,7 @@ class Wiegand:
 		self.bits = self.bits + '1'
 	
 	def __str__(self):
-		return str(self.bits)
+		return str(hex(self.bits))
 
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
@@ -43,6 +43,7 @@ print("Read card")
 wg = Wiegand()
 print(wg)
 while True:
+	bits = int(wg)
 	
-	print(type(wg))
-	print(wg)
+	if bits > 1:
+		print(hex(bits))
