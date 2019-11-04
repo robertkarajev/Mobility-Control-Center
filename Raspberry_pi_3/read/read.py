@@ -37,7 +37,7 @@ def zero(channel):
 
 
 def main():
-    set_procname("Wiegand Reader")
+
     global bits
     global timeout
     GPIO.add_event_detect(D0, GPIO.FALLING, callback=zero)
