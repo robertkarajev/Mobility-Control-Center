@@ -44,8 +44,14 @@ wg = Wiegand()
 
 while True:
 	bits = wg.reading_bits()
-	if bits > 1:
-		bits = int(wg.reading_bits(),2)
-		print(bits)
+	if bits:
+		time.sleep(0.001)
+		if len(bits) > 1:
+			data = int(wg.reading_bits(),2)
+			if data > 1:
+				print(data)
+			else:
+				bits = '0'
+				print('Failed')
 	else:
-		bits = 0
+		time.sleep(0.001)
