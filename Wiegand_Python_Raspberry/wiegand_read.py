@@ -11,12 +11,13 @@ class Wiegand:
 		self.data0 = data0
 		self.data1 = data1
 		self.bits = bits
+		self.setup()
+		self.channel()
 	
 	def setup (self):
 		GPIO.setmode(GPIO.BOARD) #BCM or BOARD
 		GPIO.setup (self.data0, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 		GPIO.setup (self.data1, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-		self.channel()
 	
 	def channel (self):
 		GPIO.add_event_detect (self.data0, GPIO.FALLING, callback = self.channel_zero)
@@ -40,7 +41,7 @@ def set_procname(newname):
     	
 print("Read card")
 wg = Wiegand()
-wg.setup()
+
 bits = wg.reading_bits()
 while True:
 	
