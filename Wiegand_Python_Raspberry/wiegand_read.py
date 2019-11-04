@@ -43,6 +43,7 @@ print("Read card")
 wg = Wiegand()
 
 while True:
+	bits = wg.reading_bits()
 	if bits:
 		bits = int(wg.reading_bits())
 		print(hex(bits))
