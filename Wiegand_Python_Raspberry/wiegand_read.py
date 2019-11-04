@@ -44,8 +44,8 @@ wg = Wiegand()
 
 while True:
 	bits = wg.reading_bits()
-	if bits:
+	if bits > 1:
 		bits = int(wg.reading_bits(),2)
-		print(hex(bits))
+		print(bits)
 	else:
 		bits = '0'
