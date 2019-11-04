@@ -52,9 +52,7 @@ def main():
 				
                 if result > 1: # the number of my test badge
                     bits = '0'
-					print (byte(result),"byte")
-					print (bin(result),"binary")
-                    print (hex(result),"hex")
+                    print (bin(result))
                 else:
                     bits = '0'
                     timeout = t
