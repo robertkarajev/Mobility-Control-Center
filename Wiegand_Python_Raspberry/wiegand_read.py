@@ -42,9 +42,8 @@ def set_procname(newname):
 print("Read card")
 wg = Wiegand()
 
-bits = wg.reading_bits()
 while True:
-	
+	bits = wg.reading_bits()
 	if bits:
 		bits = int(wg.reading_bits())
 		print(hex(bits))
