@@ -43,5 +43,6 @@ print("Read card")
 wg = Wiegand()
 print(wg)
 while True:
-	if int(wg) > 1:
-		print(wg)
+	
+	print(type(wg))
+	print(wg)
