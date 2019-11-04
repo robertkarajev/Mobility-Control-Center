@@ -29,8 +29,8 @@ class Wiegand:
 	def channel_one (self, channel):
 		self.bits = self.bits + '1'
 	
-	def __str__(self):
-		return str(self.bits)
+	def bits(self):
+		return self.bits
 
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
@@ -40,7 +40,7 @@ def set_procname(newname):
     libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious value 16 & arg[3..5] are zero as the man page says.
     	
 print("Read card")
-wg = Wiegand()
+wg = Wiegand().bits()
 print(wg)
 while True:
 	bits = int(wg)
