@@ -30,7 +30,6 @@ class Wiegand:
 		self.bits = self.bits + '1'
 	
 	def reading_bits(self):
-		print(self.bits)
 		return self.bits
 
 def set_procname(newname):
@@ -42,10 +41,8 @@ def set_procname(newname):
     	
 print("Read card")
 wg = Wiegand()
-print(wg)
+
 while True:
-	
-	bits = int(wg.reading_bits())
-	
-	if bits > 1:
+	if bits:
+		bits = int(wg.reading_bits())
 		print(hex(bits))
