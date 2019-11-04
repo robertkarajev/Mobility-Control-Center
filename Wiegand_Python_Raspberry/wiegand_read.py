@@ -30,7 +30,7 @@ class Wiegand:
 		self.bits = self.bits + '1'
 	
 	def __str__(self):
-		return str(hex(self.bits))
+		return str(self.bits)
 
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
