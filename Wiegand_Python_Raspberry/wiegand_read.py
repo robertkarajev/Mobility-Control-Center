@@ -7,12 +7,13 @@ import time
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, data0 = 22, data1 = 7, bits = ''):
+	def __init__ (self, data0 = 22, data1 = 7, *bits = ''):
 		self.data0 = data0
 		self.data1 = data1
 		self.bits = bits
 		GPIO.setmode(GPIO.BOARD) #BCM or BOARD
 		self.setup()
+		self.channel()
 	
 	def setup (self):
 		GPIO.setup (self.data0, GPIO.IN, pull_up_down = GPIO.PUD_UP)
@@ -28,8 +29,8 @@ class Wiegand:
 	def channel_one (self, channel):
 		self.bits = self.bits + '1'
 	
-	def reading_bits(self):
-		return self.bits
+	def __str__(self):
+		return str(self.bits)
 
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
@@ -40,7 +41,7 @@ def set_procname(newname):
     	
 print("Read card")
 wg = Wiegand()
-
+print(wg)
 while True:
-	if wg.reading_bits(self) > 1:
-		print(wg.reading_bits(self))
+	if wg > 1:
+		print(wg)
