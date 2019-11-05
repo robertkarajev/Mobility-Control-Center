@@ -31,6 +31,9 @@ class Wiegand:
 	
 	def reading_bits(self):
 		return self.bits
+	
+	def reset(self):
+		self.bits = '0'
 
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
@@ -38,20 +41,19 @@ def set_procname(newname):
     buff = create_string_buffer(len(newname)+1) #Note: One larger than the name (man prctl says that)
     buff.value = newname                 #Null terminated string as it should be
     libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious value 16 & arg[3..5] are zero as the man page says.
-    	
+
 print("Read card")
 wg = Wiegand()
-
-while True:
-	bits = wg.reading_bits()
-	if bits:
-		time.sleep(0.001)
-		if len(bits) > 1:
-			data = int(wg.reading_bits(),2)
-			if data > 1:
-				print(data)
-			else:
-				bits = '0'
-				print('Failed')
-	else:
-		time.sleep(0.001)
+bits = wg.reading_bits()
+try:
+	while True:
+		if len(bits) == 32:
+			#print("Binary: ", bits)
+			print ("Decimal:",int(str(bits),2))
+			#print ("Hex:",hex(int(str(bits),2)))
+			wg.reset()
+		time.sleep(0.1)
+		
+except KeyboardInterrupt:
+	GPIO.cleanup()
+	print("Clean exit by user")
