@@ -39,7 +39,8 @@ class Wiegand:
 					result = self.bits
 					#print("Binary: ", bits)
 					#print ("Decimal:",int(str(result),2))
-					print ("Hex:",hex(int(str(result),2)))
+					#print ("Hex:",hex(int(str(result),2)))
+					print(type(str(hex(int(str(result),2)))))
 					self.reset()
 					return hex(int(str(result),2))
 			else:
