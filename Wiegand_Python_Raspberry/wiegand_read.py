@@ -58,7 +58,8 @@ try:
 	while True:
 		bits = wg.reading_bits()
 		if len(bits) > 32:
-			result = bits 
+			result = bits
+			sp.sleep(0.1)
 			print("Binary: ", bits)
 			print ("Decimal:",int(str(result),2))
 			print ("Hex:",hex(int(str(result),2)))
@@ -66,7 +67,8 @@ try:
 		else:
 			wg.reset()
 			print("received bits: ", len(bits))
-			sp.sleep(0.5)
+			
+			#tm.sleep(0.1)
 		
 except KeyboardInterrupt:
 	GPIO.cleanup()
