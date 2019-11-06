@@ -7,7 +7,7 @@ import time
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, data0 = 22, data1 = 7, bits = ''):
+	def __init__ (self, data0 = 17, data1 = 27, bits = ''):
 		self.data0 = data0
 		self.data1 = data1
 		self.bits = bits
@@ -15,7 +15,7 @@ class Wiegand:
 		self.channel()
 	
 	def setup (self):
-		GPIO.setmode(GPIO.BOARD) #BCM or BOARD
+		GPIO.setmode(GPIO.BCM) #BCM or BOARD
 		GPIO.setup (self.data0, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 		GPIO.setup (self.data1, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 	
@@ -47,12 +47,15 @@ wg = Wiegand()
 try:
 	while True:
 		bits = wg.reading_bits()
-		if len(bits) > 32:
+		if len(bits) == 32:
 			print("Binary: ", bits)
 			print ("Decimal:",int(str(bits),2))
 			print ("Hex:",hex(int(str(bits),2)))
 			wg.reset()
-		time.sleep(0.1)
+		else:
+			wg.reset()
+			print("received bits: ", len(bits))
+			time.sleep(0.001)
 		
 except KeyboardInterrupt:
 	GPIO.cleanup()
