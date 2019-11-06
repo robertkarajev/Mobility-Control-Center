@@ -47,7 +47,7 @@ wg = Wiegand()
 try:
 	while True:
 		bits = wg.reading_bits()
-		result = bits[2:]
+		result = bits[3:]
 		print(len(result))
 		if len(result) == 32:
 			#print("Binary: ", bits)
