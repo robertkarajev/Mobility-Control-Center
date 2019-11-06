@@ -3,7 +3,7 @@
 #green/data0 is pin 22
 #white/data1 is pin 7
 #Note! Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
-import time
+import time as tm
 import RPi.GPIO as GPIO
 
 class Wiegand:
@@ -36,10 +36,15 @@ class Wiegand:
 	def reset(self):
 		self.bits = ''	
 
-class Timer:
-	def __init__(self, time = 15):
-		self.time = time
-		
+class Sleep:
+	def __init__(self):
+		self.time = tm.time()
+	
+	def sleep(self, sleep_time = 100):
+		current = self.time
+		end_time = 0
+		while (sleep_time > end_time):
+			end_time = current - tm.time()
 	
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
@@ -50,6 +55,7 @@ def set_procname(newname):
 
 print("Read card")
 wg = Wiegand()
+sp = Sleep()
 try:
 	while True:
 		bits = wg.reading_bits()
@@ -62,7 +68,7 @@ try:
 		else:
 			wg.reset()
 			print("received bits: ", len(bits))
-			time.sleep(0.5)
+			sp.sleep(100)
 		
 except KeyboardInterrupt:
 	GPIO.cleanup()
