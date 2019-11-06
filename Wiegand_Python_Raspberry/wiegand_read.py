@@ -34,8 +34,13 @@ class Wiegand:
 		return self.bits
 	
 	def reset(self):
-		self.bits = ''
+		self.bits = ''	
+
+class Timer:
+	def __init__(self, time = 15):
+		self.time = time
 		
+	
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
     libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
@@ -55,9 +60,9 @@ try:
 			print ("Hex:",hex(int(str(result),2)))
 			wg.reset()
 		else:
-			#wg.reset()
+			wg.reset()
 			print("received bits: ", len(bits))
-			time.sleep(1)
+			time.sleep(0.5)
 		
 except KeyboardInterrupt:
 	GPIO.cleanup()
