@@ -66,7 +66,7 @@ try:
 		else:
 			wg.reset()
 			print("received bits: ", len(bits))
-			sp.sleep(0.5)
+			sp.sleep(0.8)
 
 except KeyboardInterrupt:
 	GPIO.cleanup()
