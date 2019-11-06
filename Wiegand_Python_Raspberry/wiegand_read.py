@@ -48,7 +48,7 @@ class Wiegand:
 		else:
 			self.reset()
 			#print("received bits: ", len(bits))
-			tm.sleep(0.5)
+			tm.sleep(0.3)
 			
 class Sleep:
 	def sleep(self, sleep_time = 1): # default is on 1 sec
@@ -71,7 +71,8 @@ sp = Sleep()
 try:
 	while True:
 		wg.read()
-
+		print(wg.read())
+		
 except KeyboardInterrupt:
 	GPIO.cleanup()
 	print("Clean exit by user")
