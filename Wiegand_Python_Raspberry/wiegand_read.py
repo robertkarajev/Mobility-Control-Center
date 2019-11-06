@@ -63,7 +63,7 @@ try:
 			print("Binary: ", bits)
 			print ("Decimal:",int(str(result),2))
 			print ("Hex:",hex(int(str(result),2)))
-			#wg.reset()
+			wg.reset()
 		else:
 			wg.reset()
 			print("received bits: ", len(bits))
