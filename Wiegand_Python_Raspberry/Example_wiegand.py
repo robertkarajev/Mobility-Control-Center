@@ -55,6 +55,7 @@ def main():
 				if result > 1: # the number of my test badge
 					print("after results: ", bits)
 					bits = '0'
+					print (result)
 					print (hex(result))
 				else:
 					bits = '0'
