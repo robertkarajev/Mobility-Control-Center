@@ -57,12 +57,14 @@ sp = Sleep()
 try:
 	while True:
 		bits = wg.reading_bits()
-		if len(bits) > 32:
-			result = bits
-			print("Binary: ", bits)
-			print ("Decimal:",int(str(result),2))
-			print ("Hex:",hex(int(str(result),2)))
-			wg.reset()
+		if bits > 1:
+			sp.sleep(1)
+			if len(bits) > 32:
+					result = bits
+					print("Binary: ", bits)
+					print ("Decimal:",int(str(result),2))
+					print ("Hex:",hex(int(str(result),2)))
+					wg.reset()
 		else:
 			wg.reset()
 			print("received bits: ", len(bits))
