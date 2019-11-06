@@ -48,7 +48,7 @@ try:
 	while True:
 		bits = wg.reading_bits()
 		if len(bits) > 32:
-			#print("Binary: ", bits)
+			print("Binary: ", bits)
 			print ("Decimal:",int(str(bits),2))
 			print ("Hex:",hex(int(str(bits),2)))
 			wg.reset()

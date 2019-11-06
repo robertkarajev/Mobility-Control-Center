@@ -24,36 +24,36 @@ def set_procname(newname):
     
 def one(channel):
 	global bits
-	print("one: ", one)
+	#print("one: ", one)
 	global timeout
 	bits = bits + '1'
 	timeout = t
     
 def zero(channel):
 	global bits
-	print("zero: ",bits)
+	#print("zero: ",bits)
 	global timeout
 	bits = bits + '0'
 	timeout = t
 
 def main():
 	global bits
-	print("main: ",bits)
+	#print("main: ",bits)
 	global timeout
 	GPIO.add_event_detect(D0, GPIO.FALLING, callback=zero)
 	GPIO.add_event_detect(D1, GPIO.FALLING, callback=one)
 	while 1:
-		print("before while: ", bits)
+		#print("before while: ", bits)
 		if bits:
-			print("after while: ", bits)
+			#print("after while: ", bits)
 			timeout = timeout -1
 			time.sleep(0.001)
 			if len(bits) > 1 and timeout == 0:
 				#print "Binary:",bits
 				result = int(str(bits),2)
-				print("after len: ", bits)
+				#print("after len: ", bits)
 				if result > 1: # the number of my test badge
-					print("after results: ", bits)
+					#print("after results: ", bits)
 					bits = '0'
 					print (result)
 					print (hex(result))
