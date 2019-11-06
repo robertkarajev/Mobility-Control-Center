@@ -33,7 +33,7 @@ class Wiegand:
 		return self.bits
 	
 	def reset(self):
-		self.bits = '0'
+		self.bits = ''
 
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
