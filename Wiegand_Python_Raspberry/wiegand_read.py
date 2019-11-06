@@ -34,7 +34,7 @@ class Wiegand:
 		return self.bits
 	
 	def time_out(self):
-		return self.time_out
+		return int(self.time_out)
 	
 	def reset(self):
 		self.bits = ''
