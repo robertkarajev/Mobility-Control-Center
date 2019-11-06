@@ -33,7 +33,7 @@ class Wiegand:
 	def reset(self):
 		self.bits = ''	
 	
-	def set_procname(self)
+	def set_procname(self):
 		from ctypes import cdll, byref, create_string_buffer
 		libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
 		buff = create_string_buffer(len(self.proc_name)+1) #Note: One larger than the name (man prctl says that)
