@@ -40,13 +40,13 @@ class Wiegand:
 					#print("Binary: ", bits)
 					#print ("Decimal:",int(str(result),2))
 					print ("Hex:",hex(int(str(result),2)))
-					reset()
+					self.reset()
 					return hex(int(str(result),2))
 			else:
 				print("length is smaller than 32 bits")
-				reset()
+				self.reset()
 		else:
-			reset()
+			self.reset()
 			#print("received bits: ", len(bits))
 			tm.sleep(0.5)
 			
