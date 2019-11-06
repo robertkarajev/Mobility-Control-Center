@@ -45,10 +45,12 @@ class Wiegand:
 			else:
 				print("length is smaller than 32 bits")
 				self.reset()
+				return 0
 		else:
 			self.reset()
 			#print("received bits: ", len(bits))
-			tm.sleep(0.5)
+			tm.sleep(0.4)
+			return 0 
 			
 class Sleep:
 	def sleep(self, sleep_time = 1): # default is on 1 sec
@@ -70,7 +72,6 @@ wg = Wiegand()
 sp = Sleep()
 try:
 	while True:
-		wg.read()
 		print(wg.read())
 		
 except KeyboardInterrupt:
