@@ -37,14 +37,12 @@ class Wiegand:
 		self.bits = ''	
 
 class Sleep:
-	def __init__(self):
-		self.time = tm.time()
-	
-	def sleep(self, sleep_time = 100):
-		current = self.time
-		end_time = 0
+	def sleep(self, sleep_time = 1): # default is on 1 sec
+		start = tm.time()
+		end_time =  0
 		while (sleep_time > end_time):
-			end_time = current - tm.time()
+			end_time = tm.time() - start
+			
 	
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
@@ -68,7 +66,7 @@ try:
 		else:
 			wg.reset()
 			print("received bits: ", len(bits))
-			sp.sleep(100)
+			sp.sleep(0.01)
 		
 except KeyboardInterrupt:
 	GPIO.cleanup()
