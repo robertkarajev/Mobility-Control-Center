@@ -44,9 +44,9 @@ def set_procname(newname):
 
 print("Read card")
 wg = Wiegand()
-bits = wg.reading_bits()
 try:
 	while True:
+		bits = wg.reading_bits()
 		if len(bits) == 32:
 			#print("Binary: ", bits)
 			print ("Decimal:",int(str(bits),2))
