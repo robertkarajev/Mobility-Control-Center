@@ -47,7 +47,7 @@ wg = Wiegand()
 try:
 	while True:
 		bits = wg.reading_bits()
-		print(bits)
+		print(len(bits))
 		if len(bits) == 32:
 			#print("Binary: ", bits)
 			print ("Decimal:",int(str(bits),2))
