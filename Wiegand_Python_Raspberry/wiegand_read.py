@@ -29,13 +29,27 @@ class Wiegand:
 	
 	def channel_one (self, channel):
 		self.bits = self.bits + '1'
-	
-	def reading_bits(self):
-		return self.bits
-	
+
 	def reset(self):
 		self.bits = ''	
 
+	def read(self):
+		if len(self.bits) > 1:
+			if len(self.bits) > 32:
+					result = self.bits
+					#print("Binary: ", bits)
+					#print ("Decimal:",int(str(result),2))
+					print ("Hex:",hex(int(str(result),2)))
+					reset()
+					return hex(int(str(result),2))
+			else:
+				print("length is smaller than 32 bits")
+				reset()
+		else:
+			reset()
+			#print("received bits: ", len(bits))
+			tm.sleep(0.5)
+			
 class Sleep:
 	def sleep(self, sleep_time = 1): # default is on 1 sec
 		start = tm.time()
@@ -56,22 +70,7 @@ wg = Wiegand()
 sp = Sleep()
 try:
 	while True:
-		bits = wg.reading_bits()
-		if len(bits) > 1:
-			if len(bits) > 32:
-					result = bits
-					print("Binary: ", bits)
-					print ("Decimal:",int(str(result),2))
-					print ("Hex:",hex(int(str(result),2)))
-					print (len(bits))
-					wg.reset()
-			else:
-				print("length is smaller than 32 bits")
-				wg.reset()
-		else:
-			wg.reset()
-			print("received bits: ", len(bits))
-			tm.sleep(0.5)
+		wg.read()
 
 except KeyboardInterrupt:
 	GPIO.cleanup()
