@@ -47,9 +47,8 @@ wg = Wiegand()
 try:
 	while True:
 		bits = wg.reading_bits()
-		result = bits[3:]
 		print(len(result))
-		if len(result) == 32:
+		if len(result) > 32:
 			#print("Binary: ", bits)
 			print ("Decimal:",int(str(result),2))
 			#print ("Hex:",hex(int(str(bits),2)))
