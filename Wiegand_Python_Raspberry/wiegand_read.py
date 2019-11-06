@@ -7,7 +7,7 @@ import time as tm
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, proc_name ,data0 = 11, data1 = 13, bits = ''):
+	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = ''):
 		self.proc_name = proc_name
 		self.data0 = data0
 		self.data1 = data1
