@@ -33,12 +33,8 @@ class Wiegand:
 	def reading_bits(self):
 		return self.bits
 	
-	def time_out(self):
-		return int(self.time_out)
-	
 	def reset(self):
 		self.bits = ''
-		self.time = 15
 		
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
@@ -52,8 +48,7 @@ wg = Wiegand()
 try:
 	while True:
 		bits = wg.reading_bits()
-		time = wg.time_out() - 1
-		if len(bits) > 32 and time == 0:
+		if len(bits) > 32:
 			result = bits 
 			print("Binary: ", bits)
 			print ("Decimal:",int(str(result),2))
