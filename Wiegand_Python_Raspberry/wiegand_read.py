@@ -37,21 +37,23 @@ class Wiegand:
 		if len(self.bits) > 1:
 			if len(self.bits) >= 32 and len(self.bits) <= 34:
 					result = self.bits
+					hex = str(hex(int(str(result),2)))
 					#print("Binary: ", bits)
 					#print ("Decimal:",int(str(result),2))
 					#print ("Hex:",hex(int(str(result),2)))
-					print(type(str(hex(int(str(result),2)))))
+					#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
+					n , string = hex.split('0x')
 					self.reset()
-					return hex(int(str(result),2))
+					return string
 			else:
 				print("Bad reading")
 				self.reset()
-				return 0
+				return ''
 		else:
 			self.reset()
 			#print("received bits: ", len(bits))
 			tm.sleep(0.4)
-			return 0 
+			return ''
 			
 class Sleep:
 	def sleep(self, sleep_time = 1): # default is on 1 sec
