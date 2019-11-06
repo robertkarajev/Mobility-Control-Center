@@ -37,12 +37,12 @@ class Wiegand:
 		if len(self.bits) > 1:
 			if len(self.bits) >= 32 and len(self.bits) <= 34:
 					result = self.bits
-					hex = str(hex(int(str(result),2)))
+					hex_string = str(hex(int(str(result),2)))
 					#print("Binary: ", bits)
 					#print ("Decimal:",int(str(result),2))
 					#print ("Hex:",hex(int(str(result),2)))
 					#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
-					n , string = hex.split('0x')
+					n , string = hex_string.split('0x')
 					self.reset()
 					return string
 			else:
