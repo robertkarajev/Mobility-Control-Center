@@ -59,14 +59,14 @@ try:
 		bits = wg.reading_bits()
 		if len(bits) > 1:
 		
-			if len(bits) > 32:
+			if len(bits) == 32:
 					result = bits
 					print("Binary: ", bits)
 					print ("Decimal:",int(str(result),2))
 					print ("Hex:",hex(int(str(result),2)))
 					wg.reset()
 			else:
-				print("length is smaller than 32 bits")
+				print("length is smaller than 32 bits or more than 32")
 				wg.reset()
 		else:
 			wg.reset()
