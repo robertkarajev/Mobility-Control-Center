@@ -57,7 +57,7 @@ sp = Sleep()
 try:
 	while True:
 		bits = wg.reading_bits()
-		if bits > 1:
+		if len(bits) > 1:
 			sp.sleep(1)
 			if len(bits) > 32:
 					result = bits
