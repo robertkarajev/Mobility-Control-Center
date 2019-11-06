@@ -35,7 +35,7 @@ class Wiegand:
 
 	def read(self):
 		if len(self.bits) > 1:
-			if len(self.bits) > 32:
+			if len(self.bits) > 32 and len(self.bits) < 34:
 					result = self.bits
 					#print("Binary: ", bits)
 					#print ("Decimal:",int(str(result),2))
@@ -43,7 +43,7 @@ class Wiegand:
 					self.reset()
 					return hex(int(str(result),2))
 			else:
-				print("length is smaller than 32 bits")
+				print("Bad reading")
 				self.reset()
 				return 0
 		else:
