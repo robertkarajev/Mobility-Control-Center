@@ -61,7 +61,7 @@ try:
 		
 			if len(bits) > 32:
 					result = bits
-					a , hex = str(result)).split("0x")
+					a , hex = str(result).split("0x")
 					print("Binary: ", bits)
 					print ("Decimal:",int(str(result),2))
 					print ("Hex:", hex(int((hex),2))
