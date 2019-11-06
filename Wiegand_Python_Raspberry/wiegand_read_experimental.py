@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-#green/data0 is pin 22
-#white/data1 is pin 7
-#Note! Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
+#green/data0 is pin 11
+#white/data1 is pin 13
+#For Example Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
 import time as tm
 import RPi.GPIO as GPIO
 
