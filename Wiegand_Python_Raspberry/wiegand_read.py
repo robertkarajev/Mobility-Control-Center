@@ -7,10 +7,11 @@ import time
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, data0 = 11, data1 = 13, bits = ''):
+	def __init__ (self, data0 = 11, data1 = 13, bits = '', time_out = 15):
 		self.data0 = data0
 		self.data1 = data1
 		self.bits = bits
+		self.time_out = time_out
 		self.setup()
 		self.channel()
 	
@@ -32,9 +33,13 @@ class Wiegand:
 	def reading_bits(self):
 		return self.bits
 	
+	def time_out(self):
+		return self.time_out
+	
 	def reset(self):
 		self.bits = ''
-
+		self.time = 15
+		
 def set_procname(newname):
     from ctypes import cdll, byref, create_string_buffer
     libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
@@ -47,15 +52,17 @@ wg = Wiegand()
 try:
 	while True:
 		bits = wg.reading_bits()
-		if len(bits) == 32:
+		time = wg.time_out() - 1
+		if len(bits) > 32 and time == 0:
+			result = bits 
 			print("Binary: ", bits)
-			print ("Decimal:",int(str(bits),2))
-			print ("Hex:",hex(int(str(bits),2)))
+			print ("Decimal:",int(str(result),2))
+			print ("Hex:",hex(int(str(result),2)))
 			wg.reset()
 		else:
-			wg.reset()
+			#wg.reset()
 			print("received bits: ", len(bits))
-			time.sleep(0.001)
+			time.sleep(1)
 		
 except KeyboardInterrupt:
 	GPIO.cleanup()
