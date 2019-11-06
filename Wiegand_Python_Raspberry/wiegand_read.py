@@ -7,7 +7,7 @@ import time
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, data0 = 17, data1 = 27, bits = ''):
+	def __init__ (self, data0 = 11, data1 = 13, bits = ''):
 		self.data0 = data0
 		self.data1 = data1
 		self.bits = bits
@@ -15,7 +15,7 @@ class Wiegand:
 		self.channel()
 	
 	def setup (self):
-		GPIO.setmode(GPIO.BCM) #BCM or BOARD
+		GPIO.setmode(GPIO.BOARD) #BCM or BOARD
 		GPIO.setup (self.data0, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 		GPIO.setup (self.data1, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 	
