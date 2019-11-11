@@ -52,6 +52,8 @@ class Wiegand:
 			index += 1
 		
 		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
+			bin = binary_string[1:-1]
+			print(bin)
 			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " - PARITY CHECK FAILED")
 			return False
 		return True
