@@ -47,9 +47,9 @@ class Wiegand:
 		#bitsTo1 = [0, 0]
 		#index = 0	
 	
-		for part in parts:
-			bitsTo1[index] = part.count('1')
-			index += 1
+		#for part in parts:
+			#bitsTo1[index] = part.count('1')
+			#index += 1
 		
 		if len(self.bits) > 1:
 			bin = binary_string[1:-1]
