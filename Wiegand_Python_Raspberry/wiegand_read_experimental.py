@@ -49,7 +49,7 @@ class Wiegand:
 	def read(self):
 		if self.bits:
 			self.timeout = self.timeout - 1
-			tm.sleep(0.001)
+			tm.sleep(0.1)
 			if len(self.bits) >= 26 and self.timeout == 0:
 					print(len(self.bits))
 					result = int(str(self.bits),2)
@@ -69,7 +69,7 @@ class Wiegand:
 				#self.reset()
 		else:
 			#self.reset()
-			tm.sleep(0.001)
+			tm.sleep(0.1)
 
 print("Read card")
 wg = Wiegand()
