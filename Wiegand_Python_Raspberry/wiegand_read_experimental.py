@@ -52,7 +52,7 @@ class Wiegand:
 			index += 1
 		
 		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
-			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " (" + str(self.binaryToInt(self.bits)) + ") - PARITY CHECK FAILED")
+			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " - PARITY CHECK FAILED")
 			return False
 		return True
 			
@@ -64,14 +64,6 @@ class Wiegand:
 		elif self.verify(self.bits):
 			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + "OK KOI" )
 	
-	@staticmethod
-	def binaryToInt(binary_string):
-		print(binary_string)
-		binary_string = binary_string[1:-1] #Removing the first and last bit (Non-data bits)
-		print(binary_string)
-		result = int(binary_string, 2)
-		return result
-		
 	def read(self):
 		if len(self.bits) > 1:
 			if len(self.bits) >= 32 and len(self.bits) <= 34:
@@ -87,6 +79,7 @@ class Wiegand:
 		else:
 			self.reset()
 			tm.sleep(0.4)
+	
 	def run(self):
 		try:
 			while True:
