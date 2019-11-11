@@ -53,7 +53,7 @@ class Wiegand:
 			if len(self.bits) >= 1 and self.timeout == 0:
 					result = int(str(self.bits),2)
 					if result > 1:
-						hex_string = str(hex(result),2)
+						hex_string = str(hex(result))
 						#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
 						n , string = hex_string.split('0x')
 						print(string)
