@@ -1,6 +1,6 @@
 #!/usr/bin/python3.2
 
-import RPIO
+import RPi.GPIO as RPIO
 import signal
 import sys
 from cardReader import CardReader

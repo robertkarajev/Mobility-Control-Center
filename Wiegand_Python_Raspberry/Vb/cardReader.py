@@ -1,5 +1,5 @@
-import RPIO
 import threading
+import RPi.GPIO as RPIO
 
 class CardReader(object):
 	"""Class representing a reader. One object should be instantiated for each physical reader"""
