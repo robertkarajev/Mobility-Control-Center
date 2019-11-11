@@ -52,17 +52,17 @@ class Wiegand:
 			index += 1
 		
 		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
-			print("Frame of length (" + str(len(self.tag)) + "): " + self.tag + " (" + str(self.binaryToInt(self.tag)) + ") - PARITY CHECK FAILED")
+			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " (" + str(self.binaryToInt(self.bits)) + ") - PARITY CHECK FAILED")
 			return False
 		return True
 			
 	def process_tag(self):
-		if self.tag == '':
+		if self.bits == '':
 			return
-		elif (len(self.tag) < 10):
-			print("[" + self.name + "] Frame of length (" + str(len(self.tag)) + "):" + self.tag + " DROPPED")
+		elif (len(self.bits) < 10):
+			print("[" + self.name + "] Frame of length (" + str(len(self.bits)) + "):" + self.bits + " DROPPED")
 		elif self.verify(self.bits):
-			print("Frame of length (" + str(len(self.tag)) + "): " + self.tag + " (" + str(self.binaryToInt(self.tag)) + ") OK KOI" )
+			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " (" + str(self.binaryToInt(self.bits)) + ") OK KOI" )
 	
 	@staticmethod
 	def binaryToInt(binary_string):
