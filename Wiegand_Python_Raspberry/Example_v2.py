@@ -5,8 +5,8 @@
 import time
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(11, GPIO.IN)
-GPIO.setup(13, GPIO.IN)
+GPIO.setup(7, GPIO.IN)
+GPIO.setup(22, GPIO.IN)
 
 bits = ''
 timeout = 5
@@ -20,8 +20,8 @@ def zero(channel):
     bits = bits + '0'
     #timeout = 5
 
-GPIO.add_event_detect(13, GPIO.FALLING, callback=one)
-GPIO.add_event_detect(11, GPIO.FALLING, callback=zero)
+GPIO.add_event_detect(7, GPIO.FALLING, callback=one)
+GPIO.add_event_detect(22, GPIO.FALLING, callback=zero)
 
 print ("Present Card")
 while 1:
