@@ -55,7 +55,9 @@ class Wiegand:
 			bin = binary_string[1:-1]
 			print(bin)
 			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " - PARITY CHECK FAILED")
+			
 			return False
+		self.bits = ''
 		return True
 			
 	def process_tag(self):
@@ -65,6 +67,7 @@ class Wiegand:
 			print("[" + self.name + "] Frame of length (" + str(len(self.bits)) + "):" + self.bits + " DROPPED")
 		elif self.verify(self.bits):
 			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + "OK KOI" )
+		self.bits = ''
 	
 	def read(self):
 		if len(self.bits) > 1:
