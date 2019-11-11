@@ -51,7 +51,7 @@ class Wiegand:
 			self.timeout = self.timeout - 1
 			tm.sleep(0.001)
 			
-			if len(self.bits) >= 1 and self.timeout == 0:
+			if len(self.bits) >= 26 and self.timeout == 0:
 					print(len(self.bits))
 					result = int(str(self.bits),2)
 					if result > 1:
@@ -62,8 +62,8 @@ class Wiegand:
 						#n , string = hex_string.split('0x')
 						#print(string)
 						self.reset()
-					else:
-						self.reset()
+					#else:
+						#self.reset()
 					#return string
 			#else:
 				#print("Bad reading")
