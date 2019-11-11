@@ -87,16 +87,16 @@ class Wiegand:
 		else:
 			self.reset()
 			tm.sleep(0.4)
-
+	def run(self):
+		try:
+			while True:
+				#print(wg.read())
+				self.verify(self.bits)
+				tm.sleep(0.1)
+			
+		except KeyboardInterrupt:
+			GPIO.cleanup()
+			print("Clean exit by user")
+	
 print("Read card")
-wg = Wiegand()
-
-try:
-	while True:
-		#print(wg.read())
-		wg.verify(self.bits)
-		tm.sleep(0.1)
-		
-except KeyboardInterrupt:
-	GPIO.cleanup()
-	print("Clean exit by user")
+Wiegand.run()
