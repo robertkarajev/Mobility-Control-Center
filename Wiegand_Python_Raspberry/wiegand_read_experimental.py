@@ -43,20 +43,24 @@ class Wiegand:
 		buff.value = self.proc_name                 #Null terminated string as it should be
 		libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious
 
-	def store_bits(self):
-		stored_bits
+	def store_bits(self, incoming_bits):
+		self.stored_bits = incoming_bits
 	
 	def read(self):
-		if len(self.bits) > 1:
+		if self.bits:
 			self.timeout = self.timeout - 1
 			tm.sleep(0.001)
 			if len(self.bits) >= 1 and self.timeout == 0:
 					result = self.bits
 					hex_string = str(hex(int(str(result),2)))
-					#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
-					n , string = hex_string.split('0x')
-					print(string)
-					self.reset()
+					if hex_string > 1:
+					
+						#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
+						n , string = hex_string.split('0x')
+						print(string)
+						self.reset()
+					else:
+						self.reset()
 					#return string
 			#else:
 				#print("Bad reading")
