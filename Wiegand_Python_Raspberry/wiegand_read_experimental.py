@@ -50,15 +50,16 @@ class Wiegand:
 		if len(self.bits) > 1:
 			self.timeout = self.timeout - 1
 			tm.sleep(0.001)
-			if len(self.bits) >= 32 and self.timeout == 0:
+			if len(self.bits) >= 1 and self.timeout == 0:
 					result = self.bits
 					hex_string = str(hex(int(str(result),2)))
 					#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
 					n , string = hex_string.split('0x')
+					print(string)
 					self.reset()
-					return string
+					#return string
 			else:
-				print("Bad reading")
+				#print("Bad reading")
 				#self.reset()
 		else:
 			#self.reset()
@@ -69,7 +70,8 @@ wg = Wiegand()
 
 try:
 	while True:
-		print(wg.read())
+		#print(wg.read())
+		wg.read()
 		
 except KeyboardInterrupt:
 	GPIO.cleanup()
