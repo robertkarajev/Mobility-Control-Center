@@ -7,13 +7,11 @@ import time as tm
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = '', stored_bits = '', timeout = 10):
+	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = ''):
 		self.proc_name = proc_name
 		self.data0 = data0
 		self.data1 = data1
-		self.stored_bits = stored_bits
 		self.bits = bits
-		self.timeout = timeout
 		self.setup()
 		self.channel()
 	
@@ -27,14 +25,13 @@ class Wiegand:
 		GPIO.add_event_detect (self.data1, GPIO.FALLING, callback = self.channel_one)
 
 	def channel_zero (self, channel):
-		self.bits = self.bits + '0'
+		self.bits +='0'
 	
 	def channel_one (self, channel):
-		self.bits = self.bits + '1'
+		self.bits +='1'
 
 	def reset(self):
-		self.bits = ''
-		self.timeout = 10
+		self.bits = ''	
 	
 	def set_procname(self):
 		from ctypes import cdll, byref, create_string_buffer
@@ -42,36 +39,54 @@ class Wiegand:
 		buff = create_string_buffer(len(self.proc_name)+1) #Note: One larger than the name (man prctl says that)
 		buff.value = self.proc_name                 #Null terminated string as it should be
 		libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious
-
-	def store_bits(self, incoming_bits):
-		self.stored_bits = incoming_bits
 	
+	def verify(self, binary_string):
+		first_part = binary_string[0:13]
+		second_part = binary_string[13:0]
+		parts = [first_part, second_part]
+		bitsTo1 = [0, 0]
+		index = 0	
+	
+		for part in parts:
+			bitsTo1[index] = part.count('1')
+			index += 1
+		
+		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
+			print("Frame of length (" + str(len(self.tag)) + "): " + self.tag + " (" + str(self.binaryToInt(self.tag)) + ") - PARITY CHECK FAILED")
+			return False
+		return True
+			
+	def process_tag(self):
+		if self.tag == '':
+			return
+		elif (len(self.tag) < 10):
+			print("[" + self.name + "] Frame of length (" + str(len(self.tag)) + "):" + self.tag + " DROPPED")
+		elif self.verify(self.bits):
+			print("Frame of length (" + str(len(self.tag)) + "): " + self.tag + " (" + str(self.binaryToInt(self.tag)) + ") OK KOI" )
+	
+	@staticmethod
+	def binaryToInt(binary_string):
+		print(binary_string)
+		binary_string = binary_string[1:-1] #Removing the first and last bit (Non-data bits)
+		print(binary_string)
+		result = int(binary_string, 2)
+		return result
+		
 	def read(self):
-		if self.bits:
-			self.timeout = self.timeout - 1
-			tm.sleep(0.001)
-			if len(self.bits) > 1:
-				print(len(self.bits))
-			if len(self.bits) >= 26 and self.timeout == 0:
-					print(len(self.bits))
-					result = int(str(self.bits),2)
-					if result > 1:
-						print('dec: ',result)
-						print('hex: ',hex(result))
-						#hex_string = str(hex(result))
-						#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
-						#n , string = hex_string.split('0x')
-						#print(string)
-						self.reset()
-					#else:
-						#self.reset()
-					#return string
-			#else:
-				#print("Bad reading")
-				#self.reset()
+		if len(self.bits) > 1:
+			if len(self.bits) >= 32 and len(self.bits) <= 34:
+					result = self.bits
+					hex_string = str(hex(int(str(result),2)))
+					#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
+					n , string = hex_string.split('0x')
+					self.reset()
+					return string
+			else:
+				print("Bad reading")
+				self.reset()
 		else:
-			#self.reset()
-			tm.sleep(0.001)
+			self.reset()
+			tm.sleep(0.4)
 
 print("Read card")
 wg = Wiegand()
@@ -79,7 +94,8 @@ wg = Wiegand()
 try:
 	while True:
 		#print(wg.read())
-		wg.read()
+		wg.verify(self.bits)
+		tm.sleep(0.1)
 		
 except KeyboardInterrupt:
 	GPIO.cleanup()

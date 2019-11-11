@@ -25,10 +25,10 @@ class Wiegand:
 		GPIO.add_event_detect (self.data1, GPIO.FALLING, callback = self.channel_one)
 
 	def channel_zero (self, channel):
-		self.bits = self.bits + '0'
+		self.bits +='0'
 	
 	def channel_one (self, channel):
-		self.bits = self.bits + '1'
+		self.bits +='1'
 
 	def reset(self):
 		self.bits = ''	
@@ -39,6 +39,9 @@ class Wiegand:
 		buff = create_string_buffer(len(self.proc_name)+1) #Note: One larger than the name (man prctl says that)
 		buff.value = self.proc_name                 #Null terminated string as it should be
 		libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious
+	
+	def verify(self, binary_string):
+		first_part = binary_string[0:13]
 	
 	def read(self):
 		if len(self.bits) > 1:
