@@ -7,11 +7,13 @@ import time as tm
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = ''):
+	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = '', stored_bits = '', timeout = 15):
 		self.proc_name = proc_name
 		self.data0 = data0
 		self.data1 = data1
+		self.stored_bits = stored_bits
 		self.bits = bits
+		self.timeout = timeout
 		self.setup()
 		self.channel()
 	
@@ -31,7 +33,8 @@ class Wiegand:
 		self.bits = self.bits + '1'
 
 	def reset(self):
-		self.bits = ''	
+		self.bits = ''
+		self.timeout = 15
 	
 	def set_procname(self):
 		from ctypes import cdll, byref, create_string_buffer
@@ -39,10 +42,15 @@ class Wiegand:
 		buff = create_string_buffer(len(self.proc_name)+1) #Note: One larger than the name (man prctl says that)
 		buff.value = self.proc_name                 #Null terminated string as it should be
 		libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious
+
+	def store_bits(self):
+		stored_bits
 	
 	def read(self):
 		if len(self.bits) > 1:
-			if len(self.bits) >= 32 and len(self.bits) <= 34:
+			self.timeout = self.timeout - 1
+			tm.sleep(0.001)
+			if len(self.bits) >= 32 and self.timeout == 0:
 					result = self.bits
 					hex_string = str(hex(int(str(result),2)))
 					#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
@@ -51,10 +59,10 @@ class Wiegand:
 					return string
 			else:
 				print("Bad reading")
-				self.reset()
+				#self.reset()
 		else:
-			self.reset()
-			tm.sleep(0.4)
+			#self.reset()
+			tm.sleep(0.001)
 
 print("Read card")
 wg = Wiegand()
