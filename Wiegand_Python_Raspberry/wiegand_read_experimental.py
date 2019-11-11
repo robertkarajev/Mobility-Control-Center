@@ -55,9 +55,10 @@ class Wiegand:
 			bin = binary_string[1:-1]
 			if len(bin) == 32:
 				print('binary: ' + bin)
-				print('decimal: ' + int(bin,2)) 
-				print('hex: ' + hex(int(bin,2))) 
-			#print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " - PARITY CHECK FAILED")
+				print('decimal: ' , int(bin,2)) 
+				print('hex: ' , hex(int(bin,2))) 
+				self.bits = ''
+				#print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " - PARITY CHECK FAILED")
 			return False
 		return True
 			
