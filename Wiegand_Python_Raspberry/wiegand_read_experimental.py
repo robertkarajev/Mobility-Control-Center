@@ -50,7 +50,8 @@ class Wiegand:
 		if self.bits:
 			self.timeout = self.timeout - 1
 			tm.sleep(0.001)
-			if len(self.bits) >= 26 and self.timeout == 0:
+			
+			if len(self.bits) >= 1 and self.timeout == 0:
 					print(len(self.bits))
 					result = int(str(self.bits),2)
 					if result > 1:
