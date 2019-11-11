@@ -44,21 +44,17 @@ class Wiegand:
 		first_part = binary_string[0:13]
 		second_part = binary_string[13:0]
 		parts = [first_part, second_part]
-		bitsTo1 = [0, 0]
-		index = 0	
+		#bitsTo1 = [0, 0]
+		#index = 0	
 	
 		for part in parts:
 			bitsTo1[index] = part.count('1')
 			index += 1
 		
-		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
+		if len(self.bits) > 1:
 			bin = binary_string[1:-1]
-			print(bin)
-			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " - PARITY CHECK FAILED")
-			
-			return False
-		self.bits = ''
-		return True
+			print(hex(int(bin,2)))
+			self.bits = ''
 			
 	def process_tag(self):
 		if self.bits == '':
