@@ -99,4 +99,5 @@ class Wiegand:
 			print("Clean exit by user")
 	
 print("Read card")
-Wiegand.run()
+wg = Wiegand()
+wg.run()
