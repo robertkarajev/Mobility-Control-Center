@@ -7,7 +7,7 @@ import time as tm
 import RPi.GPIO as GPIO
 
 class Wiegand:
-	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = '', stored_bits = '', timeout = 5):
+	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = '', stored_bits = '', timeout = 10):
 		self.proc_name = proc_name
 		self.data0 = data0
 		self.data1 = data1
@@ -34,7 +34,7 @@ class Wiegand:
 
 	def reset(self):
 		self.bits = ''
-		self.timeout = 5
+		self.timeout = 10
 	
 	def set_procname(self):
 		from ctypes import cdll, byref, create_string_buffer
