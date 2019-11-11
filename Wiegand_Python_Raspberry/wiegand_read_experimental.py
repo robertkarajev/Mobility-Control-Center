@@ -51,12 +51,15 @@ class Wiegand:
 			self.timeout = self.timeout - 1
 			tm.sleep(0.001)
 			if len(self.bits) >= 1 and self.timeout == 0:
+					print(len(self.bits))
 					result = int(str(self.bits),2)
 					if result > 1:
-						hex_string = str(hex(result))
+						print('dec: ',result)
+						print('hex: ',hex(result))
+						#hex_string = str(hex(result))
 						#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
-						n , string = hex_string.split('0x')
-						print(string)
+						#n , string = hex_string.split('0x')
+						#print(string)
 						self.reset()
 					else:
 						self.reset()
