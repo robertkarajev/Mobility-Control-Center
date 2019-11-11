@@ -62,7 +62,7 @@ class Wiegand:
 		elif (len(self.bits) < 10):
 			print("[" + self.name + "] Frame of length (" + str(len(self.bits)) + "):" + self.bits + " DROPPED")
 		elif self.verify(self.bits):
-			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " (" + str(self.binaryToInt(self.bits)) + ") OK KOI" )
+			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + "OK KOI" )
 	
 	@staticmethod
 	def binaryToInt(binary_string):
