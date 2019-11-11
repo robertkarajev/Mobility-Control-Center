@@ -30,8 +30,8 @@ class CardReader(object):
 		RPIO.setmode(RPIO.BCM)
 		RPIO.setup(self.GPIO_0, RPIO.IN)
 		RPIO.setup(self.GPIO_1, RPIO.IN)
-		RPIO.add_interrupt_callback(self.GPIO_0, self.addBitToTag, edge = edge, pull_up_down = pull_up_down)
-		RPIO.add_interrupt_callback(self.GPIO_1, self.addBitToTag, edge = edge, pull_up_down = pull_up_down)
+		RPIO.add_event_detect(self.GPIO_0, self.addBitToTag, edge = edge, pull_up_down = pull_up_down)
+		RPIO.add_event_detect(self.GPIO_1, self.addBitToTag, edge = edge, pull_up_down = pull_up_down)
 		 
 		#Initializing timer
 		self.t = threading.Timer(0.1, self.processTag)
