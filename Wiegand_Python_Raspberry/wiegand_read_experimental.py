@@ -58,7 +58,7 @@ class Wiegand:
 					print(string)
 					self.reset()
 					#return string
-			else:
+			#else:
 				#print("Bad reading")
 				#self.reset()
 		else:
