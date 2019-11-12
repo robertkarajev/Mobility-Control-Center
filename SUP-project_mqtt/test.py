@@ -1,6 +1,7 @@
-from main import dummyGetPath
+#from main import dummyGetPath
+import main
 
-print(dummyGetPath())
+print(main.dummyGetPath())
 
 
 
