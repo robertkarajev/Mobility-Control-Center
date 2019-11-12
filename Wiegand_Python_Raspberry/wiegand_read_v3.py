@@ -56,31 +56,17 @@ class Wiegand:
 				print('hex: ' , hex(int(bin,2)))  
 				self.bits = ''
 				return hex_compressed
-
-class ParkingAuthenticator:
-	def __init__ (self, scanned_id = [], uid = '' , retrieved_id = []):
-		self.scanned_id = scanned_id
-		self.uid = uid
-		self.retrieved_id = retrieved_id
-		
-	def select_next_card (self):
-		pass
 	
-	def get_new_path(self):
-		pass
+	def run(self):
+		self.retrieve_id(self.bits)
+		tm.sleep(0.1)
 	
-	def verify_path (self):
-		pass
 	
 print ("Read card")
 wg = Wiegand ()
 while True:
 	try:
-		data = wg.retrieve_id()	
-		if data:		
-			print ('Card id: ', data)
-			tm.sleep (0.1)
-		
+		wg.run()
 	except KeyboardInterrupt:
 		GPIO.cleanup ()
 		print ("Clean exit by user")
