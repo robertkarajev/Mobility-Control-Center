@@ -13,14 +13,11 @@ class Wiegand:
 		self.data1 = data1
 		self.bits = bits
 		self.setup()
-		self.channel()
 	
 	def setup (self):
 		GPIO.setmode(GPIO.BOARD) #BCM or BOARD
 		GPIO.setup (self.data0, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 		GPIO.setup (self.data1, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-	
-	def channel (self):
 		GPIO.add_event_detect (self.data0, GPIO.FALLING, callback = self.channel_zero)
 		GPIO.add_event_detect (self.data1, GPIO.FALLING, callback = self.channel_one)
 
@@ -29,9 +26,6 @@ class Wiegand:
 	
 	def channel_one (self, channel):
 		self.bits +='1'
-
-	def reset(self):
-		self.bits = ''	
 	
 	def set_procname(self):
 		from ctypes import cdll, byref, create_string_buffer
@@ -52,51 +46,44 @@ class Wiegand:
 			index += 1
 		
 		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
-			bin = binary_string[1:-1]
+			bin = binary_string[1:-1] # Leaving out the first and last bit
 			if len(bin) == 32:
-				print('binary: ' + bin)
-				print('decimal: ' , int(bin,2)) 
-				print('hex: ' , hex(int(bin,2))) 
+				hex_string = str(hex(int(bin,2)))
+				#n, hex_compressed = hex_string.split('0x')
+				hex_compressed = hex_string[2:10] # Removing 0x from each incoming card
+ 				#print('binary: ' + bin)
+				#print('decimal: ' , int(bin,2)) 
+				#print('hex: ' , hex(int(bin,2)))  
 				self.bits = ''
-				#print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + " - PARITY CHECK FAILED")
-			return False
-		return True
-			
-	def process_tag(self):
-		if self.bits == '':
-			return
-		elif (len(self.bits) < 10):
-			print("[" + self.name + "] Frame of length (" + str(len(self.bits)) + "):" + self.bits + " DROPPED")
-		elif self.verify(self.bits):
-			print("Frame of length (" + str(len(self.bits)) + "): " + self.bits + "OK KOI" )
+				return hex_compressed
 	
-	def read(self):
-		if len(self.bits) > 1:
-			if len(self.bits) >= 32 and len(self.bits) <= 34:
-					result = self.bits
-					hex_string = str(hex(int(str(result),2)))
-					#print(type(str(hex(int(str(result),2)))))# binary -> string -> decimal , hex , string 
-					n , string = hex_string.split('0x')
-					self.reset()
-					return string
-			else:
-				print("Bad reading")
-				self.reset()
-		else:
-			self.reset()
-			tm.sleep(0.4)
-	
-	def run(self):
-		try:
-			while True:
-				#print(wg.read())
-				self.verify(self.bits)
-				tm.sleep(0.1)
+	def run (self):
+		try:			
+			data = self.verify (self.bits)
+			print ('Card id: ', data)
+			tm.sleep (0.1)
+			return data
 			
 		except KeyboardInterrupt:
-			GPIO.cleanup()
-			print("Clean exit by user")
+			GPIO.cleanup ()
+			print ("Clean exit by user")
+
+class ParkingAuthenticator:
+	def __init__ (self, scanned_id = [], uid = '' , retrieved_id = [])
+		self.scanned_id = scanned_id
+		self.uid = uid
+		self.retrieved_id = retrieved_id
+		
+	def select_next_card (self):
+		pass
 	
-print("Read card")
-wg = Wiegand()
-wg.run()
+	def get_new_path(self):
+		pass
+	
+	def verify_path (self):
+		pass
+	
+print ("Read card")
+wg = Wiegand ('wiegand', 11, 13)
+while True:
+	wg.run()
