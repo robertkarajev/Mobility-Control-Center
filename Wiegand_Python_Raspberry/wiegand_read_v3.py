@@ -58,15 +58,17 @@ class Wiegand:
 				return hex_compressed
 	
 	def run(self):
-		self.retrieve_id(self.bits)
-		tm.sleep(0.1)
-	
+		data = self.retrieve_id(self.bits)
+		tm.sleep(0.01)
+		return data	
 	
 print ("Read card")
 wg = Wiegand ()
 while True:
 	try:
-		wg.run()
+		data = wg.run()
+		if data:
+			print(data)
 	except KeyboardInterrupt:
 		GPIO.cleanup ()
 		print ("Clean exit by user")
