@@ -34,7 +34,7 @@ class Wiegand:
 		buff.value = self.proc_name                 #Null terminated string as it should be
 		libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious
 	
-	def verify(self, binary_string):
+	def retrieve_id(self, binary_string = ''):
 		first_part = binary_string[0:13]
 		second_part = binary_string[13:0]
 		parts = [first_part, second_part]
@@ -53,20 +53,9 @@ class Wiegand:
 				hex_compressed = hex_string[2:10] # Removing 0x from each incoming card
  				#print('binary: ' + bin)
 				#print('decimal: ' , int(bin,2)) 
-				#print('hex: ' , hex(int(bin,2)))  
+				print('hex: ' , hex(int(bin,2)))  
 				self.bits = ''
 				return hex_compressed
-	
-	def run (self):
-		try:			
-			data = self.verify (self.bits)
-			print ('Card id: ', data)
-			tm.sleep (0.1)
-			return data
-			
-		except KeyboardInterrupt:
-			GPIO.cleanup ()
-			print ("Clean exit by user")
 
 class ParkingAuthenticator:
 	def __init__ (self, scanned_id = [], uid = '' , retrieved_id = [])
@@ -84,6 +73,14 @@ class ParkingAuthenticator:
 		pass
 	
 print ("Read card")
-wg = Wiegand ('wiegand', 11, 13)
+wg = Wiegand ()
 while True:
-	wg.run()
+	try:
+		data = wg.retrieve_id()	
+		if data:		
+			print ('Card id: ', data)
+			tm.sleep (0.1)
+		
+	except KeyboardInterrupt:
+		GPIO.cleanup ()
+		print ("Clean exit by user")
