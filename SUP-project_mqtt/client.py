@@ -44,7 +44,7 @@ class MQTTClient:
         self.sendPublish('PA', self.name, 1)
 
     def __init__(self, broker_address, localTesting, password='', broker_port=1883):
-        self.name = self.randomString(69)
+        self.name = self.randomString(4)
         Connected = False   #global variable for the state of the connection
 
         self.broker_address = broker_address        #Broker address
@@ -52,7 +52,7 @@ class MQTTClient:
             self.broker_address = "127.0.0.1"       #Broker address
         self.port = broker_port                     #Broker port
         self.user = self.name                       #Connection username
-        self.password = self.randomString(69)       #Connection password
+        self.password = self.randomString(8)        #Connection password
 
         self.client = mqttClient.Client(self.name)                    #create new instance
         self.client.username_pw_set(self.user, password=self.password)#set username and password
