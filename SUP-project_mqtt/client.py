@@ -2,7 +2,6 @@ import paho.mqtt.client as mqttClient
 import random
 import string
 import json
-import main
 
 class MQTTClient:
     # create a random string containing letters and numbers with a variable length
@@ -56,7 +55,6 @@ class MQTTClient:
         self.msg = msg
         while self.msg == 'get':
             pass
-        print('WOW actually returned')
         return self.msg
 
 
@@ -91,11 +89,3 @@ class MQTTClient:
 
         self.client.loop_start()  # start the loop
         self.getAuth()
-
-
-# (broker_ip, localTesting, password='', broker_port='1833')
-mqttclient = MQTTClient("145.24.222.194", True)
-while True:
-    print('Enter new RFID tag: ')
-    tagRead = str(input())
-    mqttclient.getPath(tagRead, 'get')  # raceconditions watch out watch out watch out
