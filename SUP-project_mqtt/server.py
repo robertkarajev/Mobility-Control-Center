@@ -3,12 +3,21 @@ import json
 
 class MQTTServer:
     def dummyPathfinding(self, carInfo):
-        path = carInfo[1]
+        path = ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6', 'tag7']
+        #path = carInfo[1]
         return path
+
+    def checkAuthorization(self, carId):
+        if carId in self.checkArr:
+            return False
+        self.checkArr.append(carId)
+        print(self.checkArr)
+        return True
 
     def on_connect(self, client, userdata, flags, rc):
         self.client.subscribe('GP', 1)#GetPath
         self.client.subscribe('PA', 1)#ParkArrived
+        self.client.subscribe('AU', 1)#AUthorize
         if rc == 0:
             print("Connected to broker")
             global Connected                #Use global variable
@@ -24,9 +33,12 @@ class MQTTServer:
         if message.topic == "GP":
             carInfo = msg.split(',')
             print(carInfo)
+            #check if car already exists auth
             self.sendPublish(carInfo[0], self.dummyPathfinding(carInfo), 1)
         elif message.topic == 'PA':
             print('car ' + msg + ' has arrived succesfully')
+        elif message.topic == 'AU':
+            self.sendPublish(msg, self.checkAuthorization(msg), 1)
         else:
             print('yayeeeeeettt')
 
@@ -39,6 +51,7 @@ class MQTTServer:
         user = "server"                    #Connection username
         password = "lololololniemanddieditraadhahaha"            #Connection password
 
+        self.checkArr = []
         self.client = mqttClient.Client("Server")               #create new instance
         self.client.username_pw_set(user, password=password)    #set username and password
         self.client.on_connect = self.on_connect                      #attach function to callback
