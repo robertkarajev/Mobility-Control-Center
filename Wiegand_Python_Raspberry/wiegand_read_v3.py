@@ -5,6 +5,7 @@
 #For Example Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
 import time as tm
 import RPi.GPIO as GPIO
+import sys
 
 class Wiegand:
 	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = ''):
@@ -29,17 +30,17 @@ class Wiegand:
 	
 	def set_procname(self):
 		from ctypes import cdll, byref, create_string_buffer
-		libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
-		buff = create_string_buffer(len(self.proc_name)+1) #Note: One larger than the name (man prctl says that)
-		buff.value = self.proc_name                 #Null terminated string as it should be
-		libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious
+		libc = cdll.LoadLibrary('libc.so.6')    # Loading a 3rd party library C
+		buff = create_string_buffer(len(self.proc_name)+1) # Note: One larger than the name (man prctl says that)
+		buff.value = self.proc_name                 # Null terminated string as it should be
+		libc.prctl(15, byref(buff), 0, 0, 0) # Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious
 	
 	def retrieve_id(self, binary_string = ''):
-		first_part = binary_string[0:13]
+		first_part = binary_string[0:13] #  
 		second_part = binary_string[13:0]
 		parts = [first_part, second_part]
 		bitsTo1 = [0, 0]
-		index = 0	
+		index = 0
 	
 		for part in parts:
 			bitsTo1[index] = part.count('1')
@@ -49,11 +50,8 @@ class Wiegand:
 			bin = binary_string[1:-1] # Leaving out the first and last bit
 			if len(bin) == 32:
 				hex_string = str(hex(int(bin,2)))
-				#n, hex_compressed = hex_string.split('0x')
 				hex_compressed = hex_string[2:10] # Removing 0x from each incoming card
- 				#print('binary: ' + bin)
-				#print('decimal: ' , int(bin,2)) 
-				print('hex: ' , hex(int(bin,2)))  
+				#print('hex: ' , hex(int(bin,2)))  
 				self.bits = ''
 				return hex_compressed
 	
@@ -72,3 +70,4 @@ while True:
 	except KeyboardInterrupt:
 		GPIO.cleanup ()
 		print ("Clean exit by user")
+		sys.exit()
