@@ -14,7 +14,16 @@ class Node():
         return self.position == other.position
 
 class Pathfinding():
+    grid = [
+        [1, 1, 1, 1, 0, 1, ],
+        [1, 0, 0, 0, 0, 1, ],
+        [1, 0, 1, 1, 0, 1, ],
+        [1, 0, 1, 1, 0, 1, ],
+        [1, 0, 0, 0, 0, 1, ],
+        [1, 0, 1, 1, 1, 1, ]
+    ]
 
+    
     def astar(self,maze, start, end):
         """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
@@ -69,8 +78,11 @@ class Pathfinding():
                     continue
 
                 # Make sure walkable terrain
-                if maze[node_position[0]][node_position[1]] != 0:
+                if maze[node_position[0]][node_position[1]] > 0:
                     continue
+                """
+                knal hier parking idtjes erin
+                """
 
                 # Create new node
                 new_node = Node(current_node, node_position)
@@ -100,14 +112,33 @@ class Pathfinding():
                 # Add the child to the open list
                 open_list.append(child)
 
+    def getGrid(self):
+        return self.grid
+
+    def alterGridForParkPlace(self,coordinates,park):
+        xcor=coordinates[0]
+        ycor=coordinates[1]
+        if park:
+            self.grid[xcor][ycor]=0
+            return self.grid
+        else:
+            self.grid[xcor][ycor]=1
+            return self.grid
+
+    def setGrid(self,grid):
+        self.grid=grid
+
+    
+
+
 def main():
 
     grid = [
         [1, 1, 1, 1, 0, 1, ],
-        [1, 0, 0, 0, 0, 0, ],
-        [1, 0, 1, 1, 0, 0, ],
-        [1, 0, 1, 1, 0, 0, ],
-        [1, 0, 0, 0, 0, 0, ],
+        [1, 0, 0, 0, 0, 1, ],
+        [1, 0, 1, 1, 0, 1, ],
+        [1, 0, 1, 1, 0, 1, ],
+        [1, 0, 0, 0, 0, 1, ],
         [1, 0, 1, 1, 1, 1, ]
     ]
     start = (5, 1)
@@ -115,6 +146,7 @@ def main():
     pathfinding=Pathfinding()
     path=pathfinding.astar(grid, start, end)
     print(path)
+
 
 
 if __name__ == '__main__':
