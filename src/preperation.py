@@ -33,13 +33,13 @@ mysql_conn.insertWing('CENTER', 4, 4, 0, 'ModelParking')
 #logic
 isRunning = True
 while isRunning:
-    print('Scan your card: ')
-    rfid_tag = rfid_scanner.run()
-    print(rfid_tag)
-    if rfid_tag == '5b35866e':
-        isRunning = False
-    elif rfid_tag != None:
-        space_number = int(input('Space number: '))
+	rfid_tag = rfid_scanner.run()
+	if rfid_tag == '5b35866e':
+		print('Scanned card: ', rfid_tag)
+		isRunning = False
+	elif rfid_tag != None:
+		print('Scanned card: ', rfid_tag)
+		space_number = int(input('Space number: '))
         index = str(input('Index: '))
         id_parking_wing = str(input('Parking wing: '))
         print('Rfid parking space tag: ', rfid_tag)
