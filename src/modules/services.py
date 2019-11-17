@@ -1,7 +1,6 @@
 import mysql.connector as mysqlconn
-import timer as tm
+import modules.timer as tm
 import paho.mqtt.client as mqttClient
-import src.server as main
 import RPi.GPIO as GPIO
 
 class MQTTServerClient:
