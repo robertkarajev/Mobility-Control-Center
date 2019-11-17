@@ -35,8 +35,9 @@ class MQTTServerClient:
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print('[INFO] Connection to broker successful')
-            self.client.subscribe('GP', 1)
-            self.client.subscribe('PA', 1)
+            self.client.subscribe('GP', 1)#GetPath
+            self.client.subscribe('PA', 1)#ParkArrived
+            self.client.subscribe('AU', 1)#AUthorize
         elif rc == 1:
             print('[ERROR] Connection refused - incorrect protocol version')
         elif rc == 2:
@@ -47,14 +48,17 @@ class MQTTServerClient:
             print('[ERROR] Connection refused - bad username or password')
         elif rc == 5:
             print('[ERROR] Connection refused - not authorised')
-        
 
     def on_message(self, client, userdata, message):
         if message.topic == 'GP':
             carInfo = str(message.payload.decode('utf-8')).split(',')
-            self.client.publish(carInfo[0], main.foo(), 1)
+            self.client.publish(carInfo[0], "random", 1)
         elif message.topic == 'PA':
             carId = str(message.payload.decode('utf-8'))
+
+    #def sendPublish(self, topic, message, qos):
+    #    self.client.publish(topic, json.dumps(message), qos)
+
 
 class MySQLConnector:
     def __init__(self, db_username, db_password, db_name, db_local_address, db_local_port):
@@ -75,7 +79,7 @@ class MySQLConnector:
         self.connection.close()
 
     def insertLot(self, id_parking_lot, is_space_available, available_spaces):
-        add_lot = ("INSERT INTO parking_lot "
+        add_lot = ("INSERT INTO parking_lots "
                    "(id_parking_lot, is_space_available, available_spaces) "
                    "VALUES (%s, %s, %s)")
         lot_values = (id_parking_lot, is_space_available, available_spaces)
@@ -84,18 +88,18 @@ class MySQLConnector:
         self.connection.commit()
 
     def insertWing(self, id_parking_wing, available_spaces, number_of_spaces, is_wing_full, id_parking_lot):
-        add_wing = ("INSERT INTO parking_wing "
+        add_wing = ("INSERT INTO parking_wings "
                    "(id_parking_wing, available_spaces, number_of_spaces, is_wing_full, id_parking_lot) "
                    "VALUES (%s, %s, %s, %s, %s)")
         wing_values = (id_parking_wing, available_spaces, number_of_spaces, is_wing_full, id_parking_lot)
         self.connection.cursor().execute(add_wing, wing_values)
         self.connection.commit()
 
-    def insertSpace(self, rfid_parking_space, space_number, availability, id_parking_wing):
-        add_space = ("INSERT INTO parking_space "
-                   "(rfid_parking_space, space_number, availability, id_parking_wing) "
-                   "VALUES (%s, %s, %s, %s)")
-        space_values = (rfid_parking_space, space_number, availability, id_parking_wing)
+    def insertSpace(self, id_parking_space, rfid_tag, index, availability, id_parking_wing):
+        add_space = ("INSERT INTO parking_spaces "
+                   "(id_parking_space, rfid_tag, index, availability, id_parking_wing) "
+                   "VALUES (%s, %s, %s, %s, %s)")
+        space_values = (id_parking_space, rfid_tag, index, availability, id_parking_wing)
         self.connection.cursor().execute(add_space, space_values)
         self.connection.commit()
 
@@ -157,5 +161,5 @@ class Wiegand:
 	
 	def run(self):
 		data = self.retrieve_id(self.bits)
-		timer.postpone(0.01)
+		self.timer.postpone(0.01)
 		return data
