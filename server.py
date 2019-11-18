@@ -14,14 +14,22 @@ class MQTTServer:
         print('known carIds: ', self.checkArr)
         return True
 
+    def addTag(self, tag):
+        database = []
+        if tag in database:
+            return tag + ' already in database'
+        else:
+            return tag + ' added to database'
+
     def on_connect(self, client, userdata, flags, rc):
-        self.client.subscribe('GP', 1)#GetPath
-        self.client.subscribe('PA', 1)#ParkArrived
-        self.client.subscribe('AU', 1)#AUthorize
+        self.client.subscribe('GP', 1)  # GetPath
+        self.client.subscribe('PA', 1)  # ParkArrived
+        self.client.subscribe('AU', 1)  # AUthorize
+        self.client.subscribe('RT', 1)  # Read Tag
         if rc == 0:
             print("Connected to broker")
-            global Connected                #Use global variable
-            Connected = True                #Signal connection
+            global Connected                # Use global variable
+            Connected = True                # Signal connection
         else:
             print("Connection failed")
 
@@ -33,12 +41,15 @@ class MQTTServer:
         if message.topic == "GP":
             carInfo = msg.split(',')
             print(carInfo)
-            #check if car already exists auth
             self.sendPublish(carInfo[0], self.dummyPathfinding(carInfo), 1)
         elif message.topic == 'PA':
             print('car ' + msg + ' has arrived succesfully')
         elif message.topic == 'AU':
             self.sendPublish(msg, self.checkAuthorization(msg), 1)
+        elif message.topic == 'RT':
+            carInfo = msg.split(',')
+            print(carInfo)
+            self.sendPublish(carInfo[0], self.addTag(carInfo[1]), 1)
         else:
             print('yayeeeeeettt')
 
