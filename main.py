@@ -14,10 +14,10 @@ class Main:
 			receive_tag_id = receive_data.run()
 			if receive_tag_id != None:
 				print("Card ID: ", receive_tag_id)
-			#if not self.verifier.verify_path(receive_tag_id):
-			#	path = self.mqtt.getPath(receive_tag_id,'get') # Returns a list
-			#	self.verifier.change_path(path)
-			#	self.verifier.verify_path(receive_tag_id)
+			if not self.verifier.verify_path(receive_tag_id):
+				path = self.mqtt.getPath(receive_tag_id,'get') # Returns a list
+				self.verifier.change_path(path)
+				self.verifier.verify_path(receive_tag_id)
 
 main = Main()
 
