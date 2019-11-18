@@ -20,9 +20,11 @@ class MQTTClient:
 		self.start_connection()
 	
 	def start_connection(self):
-		print('broker address: ' + self.broker_address)
 		try:
 			self.client.connect(self.broker_address, port=self.port)  	# connect to broker
+			print(f'Broker address: {self.broker_address} port: {self.port}')
+			print('Connection status is: ', self.client.is_connected())
+			print(f'Connected to: {self.client._bind_address} : {self.client._bind_port}')
 			self.client.loop_start() 									# start the loop
 		except:
 			print('could not connect, continue trying')
