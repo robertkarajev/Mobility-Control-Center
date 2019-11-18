@@ -59,8 +59,8 @@ class MQTTClient:
         return self.msg
 
     # confirm that you have arrived at the destination (ParkArrived)
-    def arrived(self):
-        self.sendPublish('PA', self.name, 1)
+	def arrived(self):
+		self.sendPublish('PA', self.name, 1)
 
 	def __init__(self, broker_address, localTesting, password='', broker_port=1883):
 		self.name = self.randomString(4)
@@ -87,9 +87,8 @@ class MQTTClient:
 			self.client.loop_start()
 		except:
 			print('could not connect, continue trying')
-
         #self.client.loop_start()  # start the loop
-        self.getAuth()
+		self.getAuth()
 
 
 # (broker_ip, localTesting, password='', broker_port='1833')
