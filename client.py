@@ -62,27 +62,26 @@ class MQTTClient:
     def arrived(self):
         self.sendPublish('PA', self.name, 1)
 
-    def __init__(self, broker_address, localTesting, password='', broker_port=1883):
-        self.name = self.randomString(4)
-        self.authorized = False
-        global Connected
-        Connected = False   # global variable for the state of the connection
+	def __init__(self, broker_address, localTesting, password='', broker_port=1883):
+		self.name = self.randomString(4)
+		self.authorized = False
+		global Connected
+		Connected = False   # global variable for the state of the connection
 
-        self.broker_address = broker_address   # Broker address
-        if localTesting:
-            self.broker_address = "127.0.0.1"  # Broker address
-        self.port = broker_port                # Broker port
-        self.user = self.name                  # Connection username
-        self.password = self.randomString(8)   # Connection password
+		self.broker_address = broker_address   # Broker address
+		if localTesting:
+			self.broker_address = "127.0.0.1"  # Broker address
+		self.port = broker_port                # Broker port
+		self.user = self.name                  # Connection username
+		self.password = self.randomString(8)   # Connection password
 
-        self.client = mqttClient.Client(self.name)                      # create new instance
-        self.client.username_pw_set(self.user, password=self.password)  # set username and password
-        self.client.on_connect = self.on_connect                        # attach function to callback
-        self.client.on_message = self.on_message                        # attach function to callback
-        self.msg = ''
+		self.client = mqttClient.Client(self.name)                      # create new instance
+		self.client.username_pw_set(self.user, password=self.password)  # set username and password
+		self.client.on_connect = self.on_connect                        # attach function to callback
+		self.client.on_message = self.on_message                        # attach function to callback
+		self.msg = ''
 
-        print('broker address: ' + self.broker_address)
-
+		print('broker address: ' + self.broker_address)
 		try:
 			self.client.connect(self.broker_address, port=self.port)  # connect to broker
 			self.client.loop_start()
