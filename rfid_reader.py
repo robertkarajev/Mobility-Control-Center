@@ -4,8 +4,8 @@
 #white/data1 is pin 13
 #For Example Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
 import time as tm
-'''
-#import RPi.GPIO as GPIO
+
+import RPi.GPIO as GPIO
 
 class Wiegand:
 	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = ''):
@@ -62,7 +62,7 @@ class Wiegand:
 		data = self.retrieve_id(self.bits)
 		tm.sleep(0.01)
 		return data	
-'''
+
 class ParkingVerifier:
 	def __init__ (self, retrieved_path):
 		self.retrieved_path = retrieved_path
