@@ -4,6 +4,8 @@ import string
 import json
 import main
 
+idLength = 4
+
 class MQTTClient:
     # create a random string containing letters and numbers with a variable length
     def randomString(self, stringLength):
@@ -25,19 +27,16 @@ class MQTTClient:
     def on_message(self, client, userdata, message):
         if message.topic == self.name:
             msg = json.loads(str(message.payload.decode('utf-8')))
-            if not isinstance(msg, list):
-                if not self.authorized:
-                    if msg:  # msg == True
-                        self.authorized = True
-                        print('ID authorized by server')
-                    else:
-                        print('ID not authorized by server')
-                        self.client.unsubscribe(self.name)
-                        self.name = self.randomString(4)
-                        self.client.subscribe(self.name, 1)
-                        self.getAuth()
+            if not self.authorized:
+                if msg:  # msg == True
+                    self.authorized = True
+                    print('ID authorized by server')
                 else:
-                    print('[ERROR] message received not a list')
+                    print('ID not authorized by server')
+                    self.client.unsubscribe(self.name)
+                    self.name = self.randomString(idLength)
+                    self.client.subscribe(self.name, 1)
+                    self.getAuth()
             else:
                 self.msg = msg
         else:
@@ -50,23 +49,18 @@ class MQTTClient:
     def getAuth(self):
         self.sendPublish('AU', self.name, 1)
 
-    # get a path by sending the name of the car as well as the RFID tag just read(GetPath)
-    def getPath(self, tagId, msg):
+    # send a tag to the server which it will put in the database if it isn't there yet
+    def sendTag(self, tagId, msg):
         self.msg = msg
-        self.sendPublish('GP', self.name + ',' + str(tagId), 1)
+        self.sendPublish('RT', self.name + ',' + str(tagId), 1)  # RT
         while self.msg == 'get':
             pass
         return self.msg
 
-    # confirm that you have arrived at the destination (ParkArrived)
-    def arrived(self):
-        self.sendPublish('PA', self.name, 1)
-
     def __init__(self, broker_address, localTesting, password='', broker_port=1883):
-        self.name = self.randomString(4)
+        self.name = self.randomString(idLength)
         self.authorized = False
-        global Connected
-        Connected = False   # global variable for the state of the connection
+        Connected = False  # global variable for the state of the connection
 
         self.broker_address = broker_address   # Broker address
         if localTesting:
@@ -97,4 +91,4 @@ mqttclient = MQTTClient("145.24.222.194", True)
 while True:
     print('Enter new RFID tag: ')
     tagRead = str(input())
-    pad = mqttclient.getPath(tagRead, 'get')
+    print(mqttclient.sendTag(tagRead, 'get'))
