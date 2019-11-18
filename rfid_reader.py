@@ -53,7 +53,6 @@ class Wiegand:
 	#
 	def run(self):
 		data = self.retrieve_id(self.bits)
-		print("Card ID: ", data)
 		tm.sleep(0.01) 					# This is needed to halt the thread from the wiegand protocol
 		return data	
 
