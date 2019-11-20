@@ -14,5 +14,6 @@ class Timer:
         counter = 0
         while counter < seconds:
             counter += self.tick()
+            tm.sleep(0.01)
         if message != None:
             print(message)
