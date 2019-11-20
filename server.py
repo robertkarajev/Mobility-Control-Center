@@ -1,5 +1,11 @@
 import paho.mqtt.client as mqttClient
 import json
+import configparser as cp
+
+read_file = cp.ConfigParser()
+read_file.read('read_file.ini')
+port = read_file['port']['MQTT']
+ip = read_file['serverinformation']['IP']
 
 class MQTTServer:
     def dummyPathfinding(self, carInfo):
@@ -56,9 +62,9 @@ class MQTTServer:
     def __init__(self):
         Connected = False   #global variable for the state of the connection
 
-        broker_address = "145.24.222.194"  #Broker address
+        broker_address = ip #Broker address
         broker_address = '127.0.0.1'
-        port = 1883                         #Broker port
+        port = port                         #Broker port
         user = "server"                    #Connection username
         password = "lololololniemanddieditraadhahaha"            #Connection password
 

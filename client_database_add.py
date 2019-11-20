@@ -3,6 +3,11 @@ import random
 import string
 import json
 import main
+import configpaser as cp
+
+read_file = cp.ConfigParser()
+read_file.read('read_file.ini')
+ip = read_file['serverinformation']['IP']
 
 idLength = 4
 
@@ -87,7 +92,7 @@ class MQTTClient:
 
 
 # (broker_ip, localTesting, password='', broker_port='1833')
-mqttclient = MQTTClient("145.24.222.194", True)
+mqttclient = MQTTClient(ip, True)
 while True:
     print('Enter new RFID tag: ')
     tagRead = str(input())
