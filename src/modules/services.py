@@ -1,5 +1,5 @@
 import mysql.connector as mysqlconn
-import modules.timer as tm
+import time as tm
 import paho.mqtt.client as mqttClient
 import RPi.GPIO as GPIO
 
@@ -94,11 +94,11 @@ class MySQLConnector:
         self.connection.cursor().execute(add_wing, wing_values)
         self.connection.commit()
 
-    def insertSpace(self, id_parking_space, rfid_tag, index, availability, id_parking_wing):
+    def insertSpace(self, id_parking_space, rfid_tag, location, availability, id_parking_wing):
         add_space = ("INSERT INTO parking_spaces "
-                   "(id_parking_space, rfid_tag, index, availability, id_parking_wing) "
+                   "(id_parking_space, rfid_tag, location, availability, id_parking_wing) "
                    "VALUES (%s, %s, %s, %s, %s)")
-        space_values = (id_parking_space, rfid_tag, index, availability, id_parking_wing)
+        space_values = (id_parking_space, rfid_tag, location, availability, id_parking_wing)
         self.connection.cursor().execute(add_space, space_values)
         self.connection.commit()
 
@@ -108,7 +108,6 @@ class MySQLConnector:
 #For Example Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
 class Wiegand:
 	def __init__ (self, proc_name = 'wiegand', data0 = 11, data1 = 13, bits = ''):
-		self.timer = tm.Timer()
 		self.proc_name = proc_name
 		self.data0 = data0
 		self.data1 = data1
@@ -160,5 +159,5 @@ class Wiegand:
 	
 	def run(self):
 		data = self.retrieve_id(self.bits)
-		self.timer.postpone(0.01)
+		tm.sleep(0.01)
 		return data
