@@ -1,5 +1,6 @@
 import paho.mqtt.client as mqttClient
 import json
+import test
 
 class MQTTServer:
     def dummyPathfinding(self, carInfo):
@@ -22,8 +23,8 @@ class MQTTServer:
             return tag + ' added to database'
 
     def on_connect(self, client, userdata, flags, rc):
-        self.client.subscribe('GP', 1)  # GetPath
-        self.client.subscribe('PA', 1)  # ParkArrived
+        self.client.subscribe('GP', 1)  # Get Path
+        self.client.subscribe('PA', 1)  # Park Arrived
         self.client.subscribe('AU', 1)  # AUthorize
         self.client.subscribe('RT', 1)  # Read Tag
         if rc == 0:
@@ -53,31 +54,33 @@ class MQTTServer:
         else:
             print('yayeeeeeettt')
 
-    def __init__(self):
-        Connected = False   #global variable for the state of the connection
+    def __init__(self, broker_address, port, user, password, test):
+        Connected = False   # global variable for the state of the connection
 
-        broker_address = "145.24.222.194"  #Broker address
-        broker_address = '127.0.0.1'
-        port = 1883                         #Broker port
-        user = "server"                    #Connection username
-        password = "lololololniemanddieditraadhahaha"            #Connection password
+        self.broker_address = broker_address            # Broker address
+        if test:
+            self.broker_address = '127.0.0.1'
+        self.port = port                                     # Broker port
+        self.user = user                                 # Connection username
+        self.password = password   # Connection password
 
         self.checkArr = []
-        self.client = mqttClient.Client("Server")               #create new instance
-        self.client.username_pw_set(user, password=password)    #set username and password
-        self.client.on_connect = self.on_connect                      #attach function to callback
-        self.client.on_message = self.on_message                      #attach function to callback
+        self.client = mqttClient.Client("Server")             # create new instance
+        self.client.username_pw_set(self.user, password=self.password)  # set username and password
+        self.client.on_connect = self.on_connect              # attach function to callback
+        self.client.on_message = self.on_message              # attach function to callback
 
-        print(broker_address)
+        print(self.broker_address, self.port)
 
         try:
-            self.client.connect(broker_address, port=port)          #connect to broker
+            self.client.connect(self.broker_address, port=port)  # connect to broker
         except:
             print('could not connect, continue trying')
 
-        self.client.loop_start()        #start the loop
+        self.client.loop_start()  # start the loop
 
 
-MQTTServer()
+brokerInfo = test.getmqttinfo()
+mqttClient = MQTTServer(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], False)
 while True:
     pass
