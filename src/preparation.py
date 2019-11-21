@@ -23,12 +23,12 @@ print(f'db connection status: {mysql_conn.connection.is_connected()} \n')
 rfid_scanner = sv.Wiegand()
 
 #create parking lot and parking block
-mysql_conn.insertLot('ModelParking', 1, 0)
-mysql_conn.insertWing('NORTH', 3, 3, 0, 'ModelParking')
-mysql_conn.insertWing('EAST', 4, 4, 0, 'ModelParking')
-mysql_conn.insertWing('WEST', 4, 4, 0, 'ModelParking')
-mysql_conn.insertWing('SOUTH', 3, 3, 0, 'ModelParking')
-mysql_conn.insertWing('CENTER', 4, 4, 0, 'ModelParking')
+# mysql_conn.insertLot('ModelParking', 1, 0)
+# mysql_conn.insertWing('NORTH', 3, 3, 0, 'ModelParking')
+# mysql_conn.insertWing('EAST', 4, 4, 0, 'ModelParking')
+# mysql_conn.insertWing('WEST', 4, 4, 0, 'ModelParking')
+# mysql_conn.insertWing('SOUTH', 3, 3, 0, 'ModelParking')
+# mysql_conn.insertWing('CENTER', 4, 4, 0, 'ModelParking')
 
 #logic
 isRunning = True
@@ -40,11 +40,11 @@ while isRunning:
 	elif rfid_tag != None:
 		print('Scanned card: ', rfid_tag)
 		space_number = int(input('Space number: '))
-        index = str(input('Index: '))
-        id_parking_wing = str(input('Parking wing: '))
-        print('Rfid parking space tag: ', rfid_tag)
-        print(f'Record: {space_number}, {rfid_tag}, {index}, {1}, {id_parking_wing}')
-        mysql_conn.insertSpace(space_number, rfid_tag, index, 1, id_parking_wing)
+		location = str(input('Location: '))
+		id_parking_wing = str(input('Parking wing: '))
+		print('Rfid parking space tag: ', rfid_tag)
+		print(f'Record: {space_number}, {rfid_tag}, {location}, {1}, {id_parking_wing}')
+		mysql_conn.insertSpace(space_number, rfid_tag, location, 1, id_parking_wing)
 
 #closing all connections
 print('\nabout to close connections')
