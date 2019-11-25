@@ -2,9 +2,8 @@ import paho.mqtt.client as mqttClient
 import random
 import string
 import json
-import test
-
-idLength = 4
+import mqttBrokerInfo
+import time
 
 class MQTTClient:
     # create a random string containing letters and numbers with a variable length
@@ -18,8 +17,7 @@ class MQTTClient:
         client.subscribe(self.name, 1)
         if rc == 0:
             print("Connected to broker")
-            global Connected                # Use global variable
-            Connected = True                # Signal connection
+            self.connected = True
         else:
             print("Connection failed")
 
@@ -28,22 +26,27 @@ class MQTTClient:
         if message.topic == self.name:
             msg = json.loads(str(message.payload.decode('utf-8')))
             if not self.authorized:
-                if msg:  # msg == True
-                    self.authorized = True
-                    print('ID authorized by server')
-                else:
-                    print('ID not authorized by server')
-                    self.client.unsubscribe(self.name)
-                    self.name = self.randomString(idLength)
-                    self.client.subscribe(self.name, 1)
-                    self.getAuth()
+                self.authLogic(msg)
             else:
                 self.msg = msg
         else:
             print('message that was not intended for you has been received')
 
+    def authLogic(self, msg):
+        if msg:  # msg == True
+            self.authorized = True
+            print('ID authorized by server')
+        else:
+            print('ID not authorized by server')
+            self.client.unsubscribe(self.name)
+            self.name = self.randomString(self.carIdLength)
+            self.client.subscribe(self.name, 1)
+            self.getAuth()
+
     # general sending method
     def sendPublish(self, topic, message, qos):
+        if not self.authorized and not topic == 'AU':
+            self.getAuth()
         self.client.publish(topic, json.dumps(message), qos)
 
     def getAuth(self):
@@ -52,22 +55,36 @@ class MQTTClient:
     # send a tag to the server which it will put in the database if it isn't there yet
     def sendTag(self, tagId, msg):
         self.msg = msg
-        self.sendPublish('RT', self.name + ',' + str(tagId), 1)  # RT
+        self.sendPublish('RT', self.name + ',' + str(tagId), 1)  # ReadTag
+        start = time.time()
+        counter = 0
         while self.msg == 'get':
-            pass
+            if time.time() - start > self.retrySendingAfterSeconds:
+                if counter >= self.maxAmountRetriesSending:
+                    return 'took too long try sending new tag'
+                print('retry sending ReadTag')
+                self.sendPublish('RT', self.name + ',' + str(tagId), 1)  # ReadTag
+                counter += 1
+                start = time.time()
         return self.msg
 
-    def __init__(self, broker_address, localTesting, password='', broker_port=1883):
-        self.name = self.randomString(idLength)
-        self.authorized = False
-        Connected = False  # global variable for the state of the connection
+    def __init__(self, brokerAddress, brokerPort, brokerUser, brokerPassword, localTesting):
+        self.retrySendingAfterSeconds = 5
+        self.maxAmountRetriesSending = 5
+        self.carIdLength = 4
 
-        self.broker_address = broker_address   # Broker address
+        self.authorized = False
+        self.connected = False
+
+        self.name = self.randomString(self.carIdLength)
+
+        self.brokerAddress = brokerAddress  # Broker address
+        self.port = brokerPort              # Broker port
+        self.user = brokerUser              # Connection username
+        self.password = brokerPassword      # Connection password
+
         if localTesting:
             self.broker_address = "127.0.0.1"  # Broker address
-        self.port = broker_port                # Broker port
-        self.user = self.name                  # Connection username
-        self.password = self.randomString(8)   # Connection password
 
         self.client = mqttClient.Client(self.name)                      # create new instance
         self.client.username_pw_set(self.user, password=self.password)  # set username and password
@@ -75,10 +92,10 @@ class MQTTClient:
         self.client.on_message = self.on_message                        # attach function to callback
         self.msg = ''
 
-        print('broker address: ' + self.broker_address)
+        print('broker address: ' + self.brokerAddress, ' port: ', self.port)
 
         try:
-            self.client.connect(self.broker_address, port=self.port)  # connect to broker
+            self.client.connect(self.brokerAddress, port=self.port)  # connect to broker
         except:
             print('could not connect, continue trying')
 
@@ -87,7 +104,7 @@ class MQTTClient:
 
 
 # (broker_ip, localTesting, password='', broker_port='1833')
-brokerInfo = test.getmqttinfo()
+brokerInfo = mqttBrokerInfo.getmqttinfo()
 mqttClient = MQTTClient(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], False)
 while True:
     print('Enter new RFID tag: ')

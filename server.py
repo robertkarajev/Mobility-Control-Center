@@ -1,7 +1,8 @@
 import paho.mqtt.client as mqttClient
 import json
-import test
-import time
+import mqttBrokerInfo
+
+database = []
 
 class MQTTServer:
     def dummyPathfinding(self, carInfo):
@@ -17,10 +18,11 @@ class MQTTServer:
         return True
 
     def addTag(self, tag):
-        database = []
         if tag in database:
             return tag + ' already in database'
         else:
+            database.append(tag)
+            print(database)
             return tag + ' added to database'
 
     def on_connect(self, client, userdata, flags, rc):
@@ -30,8 +32,7 @@ class MQTTServer:
         self.client.subscribe('RT', 1)  # Read Tag
         if rc == 0:
             print("Connected to broker")
-            global Connected                # Use global variable
-            Connected = True                # Signal connection
+            self.connected = True                # Signal connection
         else:
             print("Connection failed")
 
@@ -40,23 +41,27 @@ class MQTTServer:
 
     def on_message(self, client, userdata, message):
         msg = json.loads(str(message.payload.decode('utf-8')))
+        # Get Path (a car wants a path (either to parking space or the exit))
         if message.topic == "GP":
             carInfo = msg.split(',')
             print(carInfo)
             self.sendPublish(carInfo[0], self.dummyPathfinding(carInfo), 1)
+        # Park Arrived (the car has arrived at the destination)
         elif message.topic == 'PA':
             print('car ' + msg + ' has arrived succesfully')
+            # AUthorization (to authorize cars to make sure no car has the same ID)
         elif message.topic == 'AU':
             self.sendPublish(msg, self.checkAuthorization(msg), 1)
+        # Read Tag (to add to database)
         elif message.topic == 'RT':
             carInfo = msg.split(',')
             print(carInfo)
             self.sendPublish(carInfo[0], self.addTag(carInfo[1]), 1)
         else:
-            print('yayeeeeeettt')
+            print('[ERROR]: topic of message not recognised')
 
     def __init__(self, broker_address, port, user, password, test):
-        Connected = False   # global variable for the state of the connection
+        self.connected = False   # global variable for the state of the connection
 
         self.broker_address = broker_address            # Broker address
         if test:
@@ -81,7 +86,7 @@ class MQTTServer:
         self.client.loop_start()  # start the loop
 
 
-brokerInfo = test.getmqttinfo()
+brokerInfo = mqttBrokerInfo.getmqttinfo()
 mqttClient = MQTTServer(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], False)
 while True:
     pass

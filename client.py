@@ -2,7 +2,7 @@ import paho.mqtt.client as mqttClient
 import random
 import string
 import json
-import test
+import mqttBrokerInfo
 import time
 
 
@@ -45,7 +45,7 @@ class MQTTClient:
         else:
             print('ID not authorized by server')
             self.client.unsubscribe(self.name)
-            self.name = self.randomString(4)
+            self.name = self.randomString(self.carIdLength)
             self.client.subscribe(self.name, 1)
             self.getAuth()
 
@@ -59,13 +59,14 @@ class MQTTClient:
         self.sendPublish('AU', self.name, 1)
 
     # get a path by sending the name of the car as well as the RFID tag just read(GetPath)
-    def getPath(self, tagId):
+    def getPath(self, tagId, msg):
+        self.msg = msg
         self.sendPublish('GP', self.name + ',' + str(tagId), 1)
         start = time.time()
         counter = 0
         while self.msg == 'get':
             if time.time() - start > self.retrySendingAfterSeconds:
-                if counter == self.maxAmountRetriesSending:
+                if counter >= self.maxAmountRetriesSending:
                     return 'took too long try sending new tag'
                 print('retry sending getPath')
                 self.sendPublish('GP', self.name + ',' + str(tagId), 1)
@@ -77,21 +78,23 @@ class MQTTClient:
     def arrived(self):
         self.sendPublish('PA', self.name, 1)
 
-    def __init__(self, broker_address, port, user, password, localTesting):
+    def __init__(self, brokerAddress, brokerPort, brokerUser, brokerPassword, localTesting):
         self.retrySendingAfterSeconds = 5
         self.maxAmountRetriesSending = 5
+        self.carIdLength = 4
 
-
-        self.name = self.randomString(4)
         self.authorized = False
-        self.connected = False   # global variable for the state of the connection
+        self.connected = False
 
-        self.broker_address = broker_address   # Broker address
+        self.name = self.randomString(self.carIdLength)
+
+        self.brokerAddress = brokerAddress   # Broker address
+        self.port = brokerPort               # Broker port
+        self.user = brokerUser               # Connection username
+        self.password = brokerPassword       # Connection password
+
         if localTesting:
-            self.broker_address = "127.0.0.1"  # Broker address
-        self.port = port                       # Broker port
-        self.user = user                       # Connection username
-        self.password = password               # Connection password
+            self.brokerAddress = "127.0.0.1"  # Broker address
 
         self.client = mqttClient.Client(self.name)                      # create new instance
         self.client.username_pw_set(self.user, password=self.password)  # set username and password
@@ -99,10 +102,10 @@ class MQTTClient:
         self.client.on_message = self.on_message                        # attach function to callback
         self.msg = 'get'
 
-        print('broker address: ' + self.broker_address, ' port: ', self.port)
+        print('broker address: ' + self.brokerAddress, ' port: ', self.port)
 
         try:
-            self.client.connect(self.broker_address, port=self.port)  # connect to broker
+            self.client.connect(self.brokerAddress, port=self.port)  # connect to broker
         except:
             print('could not connect, continue trying')
 
@@ -111,7 +114,7 @@ class MQTTClient:
 
 
 # (broker_ip, localTesting, password='', broker_port='1833')
-brokerInfo = test.getmqttinfo()
+brokerInfo = mqttBrokerInfo.getmqttinfo()
 mqttClient = MQTTClient(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], False)
 
 
@@ -119,9 +122,8 @@ def waitCardRead():
     while True:
         print('Enter new RFID tag: ')
         tagRead = str(input())
-        path = mqttClient.getPath(tagRead)
+        path = mqttClient.getPath(tagRead, 'get')
         print(path)
-        mqttClient.msg = 'get'
 
 
 waitCardRead()
