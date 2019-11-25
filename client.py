@@ -3,6 +3,7 @@ import random
 import string
 import json
 import test
+import time
 
 
 class MQTTClient:
@@ -21,41 +22,55 @@ class MQTTClient:
         else:
             print("Connection failed")
 
+
     # callback function for when a message is received from the broker
     def on_message(self, client, userdata, message):
         if message.topic == self.name:
             msg = json.loads(str(message.payload.decode('utf-8')))
-            if not isinstance(msg, list):
+            if not isinstance(msg, list):  # if msg is a path or not
                 if not self.authorized:
-                    if msg:  # msg == True
-                        self.authorized = True
-                        print('ID authorized by server')
-                    else:
-                        print('ID not authorized by server')
-                        self.client.unsubscribe(self.name)
-                        self.name = self.randomString(4)
-                        self.client.subscribe(self.name, 1)
-                        self.getAuth()
+                    self.authLogic(msg)
                 else:
                     print('[ERROR] message received not a list')
             else:
+                print(self.authorized)
                 self.msg = msg
         else:
             print('message that was not intended for you has been received')
 
+    def authLogic(self, msg):
+        if msg:  # msg == True
+            self.authorized = True
+            print('ID authorized by server')
+        else:
+            print('ID not authorized by server')
+            self.client.unsubscribe(self.name)
+            self.name = self.randomString(4)
+            self.client.subscribe(self.name, 1)
+            self.getAuth()
+
     # general sending method
     def sendPublish(self, topic, message, qos):
+        if not self.authorized and not topic == 'AU':
+            self.getAuth()
         self.client.publish(topic, json.dumps(message), qos)
 
     def getAuth(self):
         self.sendPublish('AU', self.name, 1)
 
     # get a path by sending the name of the car as well as the RFID tag just read(GetPath)
-    def getPath(self, tagId, msg):
-        self.msg = msg
+    def getPath(self, tagId):
         self.sendPublish('GP', self.name + ',' + str(tagId), 1)
+        start = time.time()
+        counter = 0
         while self.msg == 'get':
-            pass
+            if time.time() - start > self.retrySendingAfterSeconds:
+                if counter == self.maxAmountRetriesSending:
+                    return 'took too long try sending new tag'
+                print('retry sending getPath')
+                self.sendPublish('GP', self.name + ',' + str(tagId), 1)
+                counter += 1
+                start = time.time()
         return self.msg
 
     # confirm that you have arrived at the destination (ParkArrived)
@@ -63,6 +78,10 @@ class MQTTClient:
         self.sendPublish('PA', self.name, 1)
 
     def __init__(self, broker_address, port, user, password, localTesting):
+        self.retrySendingAfterSeconds = 5
+        self.maxAmountRetriesSending = 5
+
+
         self.name = self.randomString(4)
         self.authorized = False
         self.connected = False   # global variable for the state of the connection
@@ -78,7 +97,7 @@ class MQTTClient:
         self.client.username_pw_set(self.user, password=self.password)  # set username and password
         self.client.on_connect = self.on_connect                        # attach function to callback
         self.client.on_message = self.on_message                        # attach function to callback
-        self.msg = ''
+        self.msg = 'get'
 
         print('broker address: ' + self.broker_address, ' port: ', self.port)
 
@@ -95,8 +114,14 @@ class MQTTClient:
 brokerInfo = test.getmqttinfo()
 mqttClient = MQTTClient(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], False)
 
-while True:
-    print('Enter new RFID tag: ')
-    tagRead = str(input())
-    path = mqttClient.getPath(tagRead, 'get')
-    print(path)
+
+def waitCardRead():
+    while True:
+        print('Enter new RFID tag: ')
+        tagRead = str(input())
+        path = mqttClient.getPath(tagRead)
+        print(path)
+        mqttClient.msg = 'get'
+
+
+waitCardRead()
