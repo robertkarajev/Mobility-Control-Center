@@ -1,16 +1,19 @@
 from client import MQTTClient
 import rfid_reader as wg
 import configparser as cp
+import mqttBrokerinfo as mbi
 
-read_file = cp.ConfigParser()
-read_file.read('read_file.ini')
-user = read_file['serverinformation']['User']
-pw = read_file['serverinformation']['PW']
-ip = read_file['serverinformation']['IP']
-port = int(read_file['serverport']['MySQl'])
+#read_file = cp.ConfigParser()
+#read_file.read('read_file.ini')
+#user = read_file['broker']['user']
+#pw = read_file['broker']['PW']
+#ip = read_file['broker']['brokerAddress']
+#port = int(read_file['broker']['port'])
+#read_file = cp.ConfigParser()
+#read_file.read('read_file.ini')
 
 # Leaving it blank will use local host, host port 1883 
-#mqtt = MQTTClient(ip, port) # host adress, port 
+mqtt = MQTTClient(mbi[0], mbi[1], mbi[2], mbi[3]) # host adress, port, brokername,brokerpass
 verifier = wg.ParkingVerifier([])
 	
 def main():
