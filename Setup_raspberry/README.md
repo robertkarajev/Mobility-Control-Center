@@ -1,6 +1,11 @@
 # Raspberry pi 3b setup for Parking management system
 
 ## Getting Started
+[Requirements](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#installing-for-the-first-time)
+[Installing for the first time](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#installing-for-the-first-time)
+[Connecting with SSH](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#connecting-with-ssh)
+[Connecting with UART](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#connecting-with-uart)
+[Test setup] (https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#testing)
 
 ### Requirements
 
@@ -76,7 +81,7 @@ UART cable have 4 different pins, white (RX), green (TX), red (voltage), black (
 3. Download/Install driver PL2303_Prolific_DriverInstaller_3.3.3.zip (For Window Users) and reboot PC
 4. After rebooting search for Device manager in windows search bar.
 5. Search for Ports (COM & LPT), Prolific USB-to-Serial Comm Port.
-(* If you get this message: Pl2303hxa phased out since 2012. Please contact your supplier follow step 5-7*)
+(* If you get this message: Pl2303hxa phased out since 2012. Please contact your supplier follow step 6-9*)
 6. Right click on this message, update driver and select Browse my computer for driver software.
 7. Choose the option to select available drivers from your computer.
 8. In this option you'll get multiple certificate to choose from, choose the oldest certificate (from 200X).
@@ -90,8 +95,42 @@ To check the correct setup, use wiegand_read_v3.py. This script will return id o
 
 ### Requirements for testing 
 
-* Wiegand ( https://benselectronics.nl/wiegand-26-bit-rfid-long-distance-reader.-125khz/ )
-* Raspberry Pi 
+Either use one of these Wiegand readers or use another RFID scanner
+* Wiegand 26bits 125kHz ( https://benselectronics.nl/wiegand-26-bit-rfid-long-distance-reader.-125khz/ )
+* Wiegand 34bits 13.56MHz( https://benselectronics.nl/wiegand-34-bit-rfid-reader.-13.56-mhz/)
+
+** RFID tags can only be used for the corresponding frequency**
+* RFID tags 125kHz/13.56MHz
+
+* Raspberry Pi 3b or newer (pin layout may differ with newer versions) 
 * Python 3.X or newer version 
 * Python packages
-* requirements.txt
+** Internet connection is needed to update the raspberry pi**
+1. Update the raspberry pi's software and download python packages by executing the following commands
+```
+sudo apt-get update && sudo apt-get dist-upgrade
+python install get-pip.py
+sudo pip install sshtunnel RPi.GPIO mysql-connector paho-mqtt jsonlib 
+```
+2. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

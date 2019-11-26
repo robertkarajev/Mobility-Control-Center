@@ -3,7 +3,7 @@
 # For Example Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
 import time as tm
 import RPi.GPIO as GPIO 		# Used for defining GPIO on the Raspberry Pi 
-
+import sys 
 class Wiegand:
 	def __init__ (self, proc_name = 'wiegand' ,data0 = 11, data1 = 13, bits = ''):
 		self.proc_name = proc_name			# Process for wiegand protocol
