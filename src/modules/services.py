@@ -1,7 +1,7 @@
 import mysql.connector as mysqlconn
 import time as tm
 import paho.mqtt.client as mqttClient
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 
 class MQTTServerClient:
     def __init__(self, broker_address, broker_password, broker_port = 1883, broker_username = 'server'):
@@ -31,21 +31,21 @@ class MQTTServerClient:
             self.client.disconnect()
             self.client.loop_stop()
 
-    def on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
+    def on_connect(self, client, userdata, flags, connectionResult):
+        if connectionResult == 0:
             print('[INFO] Connection to broker successful')
             self.client.subscribe('GP', 1)#GetPath
             self.client.subscribe('PA', 1)#ParkArrived
             self.client.subscribe('AU', 1)#AUthorize
-        elif rc == 1:
+        elif connectionResult == 1:
             print('[ERROR] Connection refused - incorrect protocol version')
-        elif rc == 2:
+        elif connectionResult == 2:
             print('[ERROR] Connection refused - invalid client identifier')
-        elif rc == 3:
+        elif connectionResult == 3:
             print('[ERROR] Connection refused - server unavailable')
-        elif rc == 4:
+        elif connectionResult == 4:
             print('[ERROR] Connection refused - bad username or password')
-        elif rc == 5:
+        elif connectionResult == 5:
             print('[ERROR] Connection refused - not authorised')
 
     def on_message(self, client, userdata, message):
@@ -77,30 +77,98 @@ class MySQLConnector:
     def closeConnection(self):
         self.connection.close()
 
+    def executeQuery(self, query, values = None):
+        cursor = self.connection.cursor()
+        if 'SELECT' in query.upper():
+            cursor.execute(query, values)
+            result = cursor.fetchall()
+            cursor.close()
+            return result
+        else:
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.close()
+            return True
+
+    def checkCarId(self, carId):
+        query = "SELECT IF(id_car = '"+carId+"', True, False) FROM cars"
+        result = self.executeQuery(query)
+        return (1,) in result
+
+    def registerCar(self, carId):
+        if not self.checkCarId(carId):
+            query = "INSERT INTO cars VALUES ('"+carId+"', 'arriving')"
+            self.executeQuery(query)
+            return True
+        else:
+            return False
+
+    #if lwaving or parked: return path to exit
+    #else assign parking space and return path to said parking space
+    def getCarState(self, carId):
+        query = "SELECT state FROM cars WHERE id_car = '"+carId+"'"
+        result = self.executeQuery(query)
+        return result[0][0]
+
+    def setCarState(self, carId, state):
+        query = "UPDATE cars SET state = '"+state+"' WHERE id_car = '"+carId+"'"
+        self.executeQuery(query)
+
+    def getAssignedCarToSpace(self, carId):
+        query = "SELECT * FROM parking_spaces WHERE assigned_car = '"+carId+"'"
+        result = self.executeQuery(query)
+        return result[0]
+
+    def getRandomParkingSpace(self):
+        query = "SELECT * FROM parking_spaces WHERE assigned_car IS NULL ORDER BY RAND() LIMIT 1"
+        result = self.executeQuery(query)
+        return result[0]
+
+    def assignCarToSpace(self, carId, rfid_tag):
+        query = "UPDATE parking_spaces SET assigned_car = '"+carId+"' WHERE rfid_tag = '"+rfid_tag+"'"
+        self.executeQuery(query)
+
+    def unassignCarFromSpace(self, rfid_tag):
+        query = "DELETE assigned_car FROM parking_spaces WHERE rfid_tag = '"+rfid_tag+"'"
+        self.executeQuery(query)
+
+    def isEntryPoint(self, rfid_tag):
+        query = "SELECT IF(rfid_tag = '"+rfid_tag+"', True, False) FROM parking_roads WHERE id_unit >= 100000 AND id_unit < 101000"
+        result = self.executeQuery(query)
+        return (1,) in result
+
+    def getExit(self):
+        query = "SELECT * FROM parking_roads WHERE id_unit >= 101000 AND id_unit < 102000"
+        result = self.executeQuery(query)
+        return result
+
     def insertLot(self, id_parking_lot, is_space_available, available_spaces):
-        add_lot = ("INSERT INTO parking_lots "
+        query = ("INSERT INTO parking_lots "
                    "(id_parking_lot, is_space_available, available_spaces) "
                    "VALUES (%s, %s, %s)")
-        lot_values = (id_parking_lot, is_space_available, available_spaces)
-        
-        self.connection.cursor().execute(add_lot, lot_values)
-        self.connection.commit()
+        values = (id_parking_lot, is_space_available, available_spaces)
+        self.executeQuery(query, values)
 
     def insertWing(self, id_parking_wing, available_spaces, number_of_spaces, is_wing_full, id_parking_lot):
-        add_wing = ("INSERT INTO parking_wings "
+        query = ("INSERT INTO parking_wings "
                    "(id_parking_wing, available_spaces, number_of_spaces, is_wing_full, id_parking_lot) "
                    "VALUES (%s, %s, %s, %s, %s)")
-        wing_values = (id_parking_wing, available_spaces, number_of_spaces, is_wing_full, id_parking_lot)
-        self.connection.cursor().execute(add_wing, wing_values)
-        self.connection.commit()
+        values = (id_parking_wing, available_spaces, number_of_spaces, is_wing_full, id_parking_lot)
+        self.executeQuery(query, values)
 
     def insertSpace(self, id_parking_space, rfid_tag, location, availability, id_parking_wing):
-        add_space = ("INSERT INTO parking_spaces "
+        query = ("INSERT INTO parking_spaces "
                    "(id_parking_space, rfid_tag, location, availability, id_parking_wing) "
                    "VALUES (%s, %s, %s, %s, %s)")
-        space_values = (id_parking_space, rfid_tag, location, availability, id_parking_wing)
-        self.connection.cursor().execute(add_space, space_values)
-        self.connection.commit()
+        values = (id_parking_space, rfid_tag, location, availability, id_parking_wing)
+        self.executeQuery(query, values)
+
+    def insertRoad(self, id_unit, rfid_tag, location, id_parking_lot):
+        query = ("INSERT INTO parking_roads "
+                   "(id_unit, rfid_tag, location, id_parking_wing) "
+                   "VALUES (%s, %s, %s, %s)")
+        values = (id_unit, rfid_tag, location, id_parking_lot)
+        self.executeQuery(query, values)
 
 #!/usr/bin/env python
 #green/data0 is pin 11
