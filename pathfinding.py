@@ -26,8 +26,14 @@ class Pathfinding():
     
     def astar(self,maze, start, end):
         """Returns a list of tuples as a path from the given start to the given end in the given maze"""
-
-        
+        grid = [
+            [1, 1, 1, 1, 0, 1, ],
+            [1, 0, 0, 0, 0, 1, ],
+            [1, 0, 1, 1, 0, 1, ],
+            [1, 0, 1, 1, 0, 1, ],
+            [1, 0, 0, 0, 0, 1, ],
+            [1, 0, 1, 1, 1, 1, ]
+        ]
 
         # Create start and end node
         start_node = Node(None, start)
@@ -135,24 +141,26 @@ class Pathfinding():
     def setGrid(self,grid):
         self.grid=grid
 
-def index_2d(myList, v):
-    for i, x in enumerate(myList):
-        if v in x:
-            return (i, x.index(v))
+    def index_2d(myList, v):
+        for i, x in enumerate(myList):
+            if v in x:
+                return (i, x.index(v))
 
 
 def main():
 
     grid = [
-        [1,  "N1", "N2", "N3", 0,   1, ],
-        ["W4", 0,   0,    0,   0, "E4", ],
-        ["W3", 0, "C1", "C2",  0, "E3", ],
-        ["W2", 0, "C3", "C4",  0, "E2", ],
-        ["W1", 0,   0,    0,   0, "E1", ],
-        [1,    0, "S1", "S2", "S3", 1, ]
+        [1, 1, 1, 1, 0, 1, ],
+        [1, 0, 0, 0, 0, 1, ],
+        [1, 0, 1, 1, 0, 1, ],
+        [1, 0, 1, 1, 0, 1, ],
+        [1, 0, 0, 0, 0, 1, ],
+        [1, 0, 1, 1, 1, 1, ]
     ]
-    start = (5, 1)
-    end = (0, 4)
+    start = (5,1)
+    end = (0,4)
+
+
     pathfinding=Pathfinding()
     path=pathfinding.astar(grid, start, end)
     print(path)
