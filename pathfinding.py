@@ -82,7 +82,12 @@ class Pathfinding():
                     continue
                 """
                 knal hier parking idtjes erin
+                work voor later: 
+                        1.vindt index (cordinaat) via de index methode eg= grid.index("d2")
+                        gooi 1 in de bovenstaande if
+                        geef die route 
                 """
+                
 
                 # Create new node
                 new_node = Node(current_node, node_position)
@@ -134,12 +139,12 @@ class Pathfinding():
 def main():
 
     grid = [
-        [1, 1, 1, 1, 0, 1, ],
-        [1, 0, 0, 0, 0, 1, ],
-        [1, 0, 1, 1, 0, 1, ],
-        [1, 0, 1, 1, 0, 1, ],
-        [1, 0, 0, 0, 0, 1, ],
-        [1, 0, 1, 1, 1, 1, ]
+        [1,  "c1", "c2", "c3", 0,   1, ],
+        ["b4", 0,   0,    0,   0, "d4", ],
+        ["b3", 0, "e1", "e2",  0, "d3", ],
+        ["b2", 0, "e3", "e4",  0, "d2", ],
+        ["b1", 0,   0,    0,   0, "d1", ],
+        [1,    0, "a1", "a2", "a3", 1, ]
     ]
     start = (5, 1)
     end = (0, 4)
