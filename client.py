@@ -1,4 +1,4 @@
-import paho.mqtt.client as mqttClient
+import paho.mqtt.client as paho
 import random
 import string
 import json
@@ -18,7 +18,6 @@ class MQTTClient:
         client.subscribe(self.name, 1)
         if rc == 0:
             print("Connected to broker")
-            self.connected = True
         else:
             print("Connection failed")
 
@@ -59,8 +58,8 @@ class MQTTClient:
         self.sendPublish('AU', self.name, 1)
 
     # get a path by sending the name of the car as well as the RFID tag just read(GetPath)
-    def getPath(self, tagId, msg):
-        self.msg = msg
+    def getPath(self, tagId):
+        self.msg = 'get'
         self.sendPublish('GP', self.name + ',' + str(tagId), 1)
         start = time.time()
         counter = 0
@@ -79,15 +78,14 @@ class MQTTClient:
         self.sendPublish('PA', self.name, 1)
 
     def __init__(self, brokerAddress, brokerPort, brokerUser, brokerPassword, localTesting):
+        # variables that can be changed
         self.retrySendingAfterSeconds = 5
         self.maxAmountRetriesSending = 5
         self.carIdLength = 4
 
+        # variables that should not be changed
         self.authorized = False
-        self.connected = False
-
         self.name = self.randomString(self.carIdLength)
-
         self.brokerAddress = brokerAddress   # Broker address
         self.port = brokerPort               # Broker port
         self.user = brokerUser               # Connection username
@@ -96,7 +94,7 @@ class MQTTClient:
         if localTesting:
             self.brokerAddress = "127.0.0.1"  # Broker address
 
-        self.client = mqttClient.Client(self.name)                      # create new instance
+        self.client = paho.Client(self.name)                            # create new instance
         self.client.username_pw_set(self.user, password=self.password)  # set username and password
         self.client.on_connect = self.on_connect                        # attach function to callback
         self.client.on_message = self.on_message                        # attach function to callback
@@ -122,7 +120,7 @@ def waitCardRead():
     while True:
         print('Enter new RFID tag: ')
         tagRead = str(input())
-        path = mqttClient.getPath(tagRead, 'get')
+        path = mqttClient.getPath(tagRead)
         print(path)
 
 

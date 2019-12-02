@@ -1,9 +1,10 @@
-import paho.mqtt.client as mqttClient
+import paho.mqtt.client as paho
 import random
 import string
 import json
 import mqttBrokerInfo
 import time
+
 
 class MQTTClient:
     # create a random string containing letters and numbers with a variable length
@@ -86,7 +87,7 @@ class MQTTClient:
         if localTesting:
             self.broker_address = "127.0.0.1"  # Broker address
 
-        self.client = mqttClient.Client(self.name)                      # create new instance
+        self.client = paho.Client(self.name)                      # create new instance
         self.client.username_pw_set(self.user, password=self.password)  # set username and password
         self.client.on_connect = self.on_connect                        # attach function to callback
         self.client.on_message = self.on_message                        # attach function to callback
