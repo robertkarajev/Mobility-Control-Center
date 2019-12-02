@@ -2,7 +2,6 @@ import paho.mqtt.client as paho
 import random
 import string
 import json
-import mqttBrokerInfo
 import time
 
 
@@ -109,19 +108,3 @@ class MQTTClient:
 
         self.client.loop_start()  # start the loop
         self.getAuth()
-
-
-# (broker_ip, localTesting, password='', broker_port='1833')
-brokerInfo = mqttBrokerInfo.getmqttinfo()
-mqttClient = MQTTClient(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], False)
-
-
-def waitCardRead():
-    while True:
-        print('Enter new RFID tag: ')
-        tagRead = str(input())
-        path = mqttClient.getPath(tagRead)
-        print(path)
-
-
-waitCardRead()
