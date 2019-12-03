@@ -90,17 +90,20 @@ class MySQLConnector:
         self.connection.close()
 
     def executeQuery(self, query, values = None):
-        cursor = self.connection.cursor()
-        if 'SELECT' in query.upper():
-            cursor.execute(query, values)
-            result = cursor.fetchall()
-            cursor.close()
-            return result
-        else:
-            cursor.execute(query, values)
-            self.connection.commit()
-            cursor.close()
-            return True
+        try:
+            cursor = self.connection.cursor()
+            if 'SELECT' in query.upper():
+                cursor.execute(query, values)
+                result = cursor.fetchall()
+                cursor.close()
+                return result
+            else:
+                cursor.execute(query, values)
+                self.connection.commit()
+                cursor.close()
+                return True
+        except Exception:
+            print(Exception)
 
     def checkCarId(self, carId):
         query = "SELECT IF(id_car = '"+carId+"', True, False) FROM cars"
@@ -114,6 +117,10 @@ class MySQLConnector:
             return True
         else:
             return False
+
+    def deleteCar(self, carId):
+        query = "DELETE FROM cars WHERE id_car = '"+carId+"'"
+        self.executeQuery(query)
 
     #if lwaving or parked: return path to exit
     #else assign parking space and return path to said parking space

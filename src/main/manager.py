@@ -1,9 +1,9 @@
-import main.modules.credentials as credentials
+import main.modules.credentials as cr
 import main.modules.services as sv
 
 class ParkingManager:
 	def __init__(self):
-		mqttBrokerCredentials = credentials.getMqttBrokerCredentials()
+		mqttBrokerCredentials = cr.getMqttBrokerCredentials()
 		self.mqttServerClient = sv.MqttServerClient(mqttBrokerCredentials[0],
 													mqttBrokerCredentials[1],
 													mqttBrokerCredentials[2],
@@ -11,26 +11,51 @@ class ParkingManager:
 		self.mqttServerClient.createClient()
 		self.mqttServerClient.startConnection()
 
-		mySqlDbCredentials = credentials.getMySqlDatabaseCredentials()
+		mySqlDbCredentials = cr.getMySqlDatabaseCredentials()
 		self.mySqlConnector = sv.MySQLConnector(mySqlDbCredentials[0], 
 												mySqlDbCredentials[1],
 												mySqlDbCredentials[2],
 												mySqlDbCredentials[3],
 												mySqlDbCredentials[4])
 		self.mySqlConnector.startConnection()
-		
 
 	def carAuthentication(self, carId):
-		pass
+		carInDb = self.mySqlConnector.checkCarId(carId)
+		if carInDb:
+			return False  # carId already in db so new car needs to get new id: return false
+		else:
+			self.mySqlConnector.registerCar(carId)
+			return True
 
 	def spaceAssignment(self, carId):	#prefered assignemnet???
 		pass
 	
-	def generatePath(self, carId, rfidTag):
-		pass
+	def getPath(self, startTag, endTag):
+		return ['tag1', 'tag2', 'tag3', endTag]
+
+	def generatePath(self, carId, startTag):
+		carState = self.mySqlConnector.getCarState(carId)
+		if carState == 'arriving':
+			endTag = self.mySqlConnector.getAssignedCarToSpace(carId)[2]
+			if not endTag:
+				endTag = self.mySqlConnector.getRandomParkingSpace()[2]
+				self.mySqlConnector.assignCarToSpace(carId, endTag)
+		else:
+			if carState == 'parked':
+				self.mySqlConnector.setCarState(carId, 'leaving')
+				self.mySqlConnector.unassignCarFromSpace(carId)
+			endTag = self.mySqlConnector.getExit()
+
+		return self.getPath(startTag, endTag)
 
 	def registerArrival(self, carId):
-		pass
+		carState = self.mySqlConnector.getCarState(carId)
+		if carState == 'arriving':
+			self.mySqlConnector.setCarState(carId, 'parked')
+			return 'parked'
+		else:
+			self.mySqlConnector.deleteCar(carId)
+			return 'clearName'
 
 	def processMessage(self):
 		genericMessage = self.mqttServerClient.getMsg()
