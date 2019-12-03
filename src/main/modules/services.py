@@ -60,19 +60,19 @@ class MqttServerClient:
 
 
 class MySQLConnector:
-    def __init__(self, db_username, db_password, db_name, db_local_address, db_local_port):
-        self.db_username = db_username
-        self.db_password = db_password
-        self.db_name = db_name
-        self.db_host = db_local_address
-        self.db_port = db_local_port
+    def __init__(self, username, password, databaseName, databaseHost, databasePort):
+        self.username = username
+        self.password = password
+        self.databaseName = databaseName
+        self.databaseHost = databaseHost
+        self.databasePort = databasePort
 
     def startConnection(self):
-        self.connection = mysqlconn.MySQLConnection(username = self.db_username,
-                                         password = self.db_password,
-                                         database = self.db_name,
-                                         host = self.db_host,
-                                         port = self.db_port)
+        self.connection = mysqlconn.MySQLConnection(username = self.username,
+                                         password = self.password,
+                                         database = self.databaseName,
+                                         host = self.databaseHost,
+                                         port = self.databasePort)
 
     def closeConnection(self):
         self.connection.close()
