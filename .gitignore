@@ -1,2 +1,3 @@
 .vscode
 src/main/modules/__pycache__
+src/main/modules/credentials.py

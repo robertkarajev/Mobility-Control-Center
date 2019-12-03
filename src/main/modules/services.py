@@ -1,42 +1,49 @@
 import mysql.connector as mysqlconn
 import time as tm
-import paho.mqtt.client as mqttClient
-#import RPi.GPIO as GPIO
+import paho.mqtt.client as paho
+import threading
+import json
+# import RPi.GPIO as GPIO
 
 class MqttServerClient:
-    def __init__(self, brokerAddress, brokerPassword, brokerPort = 1883, brokerUsername = 'server'):
-        self.brokerAddress = brokerAddress
-        self.brokerPort = brokerPort
-        self.brokerUsername = brokerUsername
-        self.brokerPassword = brokerPassword
+    def __init__(self, port, user, password, brokerAddress = '127.0.0.1'):
+        self.user = user                                 # Connection username
+        self.password = password   # Connection password
+        self.brokerAddress = brokerAddress            # Broker address
+        self.port = port                                     # Broker port
+        
+        self.returnMsg = threading.Event()
+        self.msg = ''
+        self.topic = ''
+
+        print(self.brokerAddress, self.port)
 
     def createClient(self):
-        self.client = mqttClient.Client("Server")
-        self.client.username_pw_set(self.brokerUsername, password = self.brokerPassword)
-        
-        #attach function to callback
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
-        
+        self.client = paho.Client("Server")                   # create new instance
+        self.client.username_pw_set(self.user, password=self.password)  # set username and password
+        self.client.on_connect = self.on_connect              # attach function to callback
+        self.client.on_message = self.setMsg                  # attach function to callback
+
     def startConnection(self):
-        try:    
-            self.client.connect(broker_address, port=self.broker_port)
-            
-            #create new thread to process network traffic
+        try:
+            self.client.connect(self.broker_address, port=self.port)
+
+            # create new thread to process network traffic
             self.client.loop_start()
         except:
             print('[INFO] Connection failed...')
 
     def stopConnection(self):
-            self.client.disconnect()
-            self.client.loop_stop()
+        self.client.disconnect()
+        self.client.loop_stop()
 
     def on_connect(self, client, userdata, flags, connectionResult):
         if connectionResult == 0:
             print('[INFO] Connection to broker successful')
-            self.client.subscribe('GP', 1)#GetPath
-            self.client.subscribe('PA', 1)#ParkArrived
-            self.client.subscribe('AU', 1)#AUthorize
+            self.client.subscribe('GP', 1)  # Get Path
+            self.client.subscribe('LT', 1)  # arrived at Last Tag
+            self.client.subscribe('AU', 1)  # AUthorize
+            self.client.subscribe('RT', 1)  # Read Tag
         elif connectionResult == 1:
             print('[ERROR] Connection refused - incorrect protocol version')
         elif connectionResult == 2:
@@ -48,13 +55,18 @@ class MqttServerClient:
         elif connectionResult == 5:
             print('[ERROR] Connection refused - not authorised')
 
-    def on_message(self, client, userdata, message):
-        if message.topic == 'GP':
-            carInfo = str(message.payload.decode('utf-8')).split(',')
-            self.client.publish(carInfo[0], "random", 1)
-        elif message.topic == 'PA':
-            carId = str(message.payload.decode('utf-8'))
+    def sendPublish(self, topic, message, qos):
+        self.client.publish(topic, json.dumps(message), qos)
 
+    def setMsg(self, client, userdata, msg):
+        self.topic = msg.topic
+        self.msg = json.loads(str(msg.payload.decode('utf-8')))
+        self.returnMsg.set()
+
+    def getMsg(self):
+        self.returnMsg.wait()
+        self.returnMsg.clear()
+        return [self.topic, self.msg]
     #def sendPublish(self, topic, message, qos):
     #    self.client.publish(topic, json.dumps(message), qos)
 
