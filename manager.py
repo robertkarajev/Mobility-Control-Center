@@ -18,8 +18,9 @@ def processMsg():
         client.sendPublish(carInfo[0], test.dummyPathfinding(carInfo), 1)
 
     # Park Arrived (the car has arrived at the destination)
-    elif topic == 'PA':
+    elif topic == 'LT':
         print('car ' + msg + ' has arrived succesfully')
+        client.sendPublish(msg, test.carArrivedLogic(msg), 1)
 
     # AUthorization (to authorize cars to make sure no car has the same ID)
     elif topic == 'AU':

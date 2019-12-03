@@ -13,6 +13,15 @@ class mySQLconnector:
         path = ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6', 'tag7']
         return path
 
+    def carArrivedLogic(self, carId):
+        # if carId.state == 1||2
+        if carId:
+            self.deleteCar(carId)
+            return 'clearName'
+        # if carId.state == 0
+        else:
+            carId.state = 1
+
     def registerCar(self, carId):
         if carId in self.checkArr:
             return False
@@ -28,11 +37,14 @@ class mySQLconnector:
             print(database)
             return tag + ' added to database'
 
+    def deleteCar(self, carId):
+        if carId in database:
+            database.remove(carId)
 
 class MQTTServer:
     def on_connect(self, client, userdata, flags, rc):
         self.client.subscribe('GP', 1)  # Get Path
-        self.client.subscribe('PA', 1)  # Park Arrived
+        self.client.subscribe('LT', 1)  # arrived at Last Tag
         self.client.subscribe('AU', 1)  # AUthorize
         self.client.subscribe('RT', 1)  # Read Tag
         if rc == 0:

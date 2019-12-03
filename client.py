@@ -20,6 +20,19 @@ class MQTTClient:
         else:
             print("Connection failed")
 
+    def setNameFile(self):
+        f = open("carName.txt", "w+")
+        f.write(self.name)
+        f.close()
+
+    def getNameFile(self):
+        f = open("carName.txt", "r+")
+        self.name = f.read()
+
+    def clearNameFile(self):
+        f = open("carName.txt", "w+")
+        f.write('')
+        f.close()
 
     # callback function for when a message is received from the broker
     def on_message(self, client, userdata, message):
@@ -28,6 +41,9 @@ class MQTTClient:
             if not isinstance(msg, list):  # if msg is a path or not
                 if not self.authorized:
                     self.authLogic(msg)
+                elif msg == 'clearName':
+                    self.clearNameFile()
+                    self.authorized = False
                 else:
                     print('[ERROR] message received not a list')
             else:
@@ -38,6 +54,7 @@ class MQTTClient:
 
     def authLogic(self, msg):
         if msg:  # msg == True
+            self.setNameFile()
             self.authorized = True
             print('ID authorized by server')
         else:
@@ -72,9 +89,9 @@ class MQTTClient:
                 start = time.time()
         return self.msg
 
-    # confirm that you have arrived at the destination (ParkArrived)
-    def arrived(self):
-        self.sendPublish('PA', self.name, 1)
+    # confirm that you have arrived at the destination (arrivedAtLastTag)
+    def arrivedAtLastTag(self):
+        self.sendPublish('LT', self.name, 1)
 
     def __init__(self, brokerAddress, brokerPort, brokerUser, brokerPassword, localTesting):
         # variables that can be changed
@@ -82,9 +99,14 @@ class MQTTClient:
         self.maxAmountRetriesSending = 5
         self.carIdLength = 4
 
+        self.getNameFile()
+        self.authorized = True
+        if not self.name:
+            self.authorized = False
+            self.name = self.randomString(self.carIdLength)
+        print(self.name)
+
         # variables that should not be changed
-        self.authorized = False
-        self.name = self.randomString(self.carIdLength)
         self.brokerAddress = brokerAddress   # Broker address
         self.port = brokerPort               # Broker port
         self.user = brokerUser               # Connection username
@@ -107,4 +129,7 @@ class MQTTClient:
             print('could not connect, continue trying')
 
         self.client.loop_start()  # start the loop
-        self.getAuth()
+        if self.authorized:
+            print('id was authorized before already')
+        else:
+            self.getAuth()
