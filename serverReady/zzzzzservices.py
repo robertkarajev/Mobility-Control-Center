@@ -20,13 +20,6 @@ class MqttServerClient:
 
         print(self.broker_address, self.port)
 
-        try:
-            self.client.connect(self.broker_address, port=port)  # connect to broker
-        except:
-            print('could not connect, continue trying')
-
-        self.client.loop_start()  # start the loop
-
     def createClient(self):
         self.client = paho.Client("Server")                   # create new instance
         self.client.username_pw_set(self.user, password=self.password)  # set username and password

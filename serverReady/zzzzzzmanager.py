@@ -5,31 +5,55 @@ class ParkingManager:
     def __init__(self):
         self.counter = 0
         brokerInfo = mqttBrokerInfo.getmqttinfo()
-        self.mqtt = services.MQTTServer(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], False)
+        self.mqtt = services.MqttServerClient(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], False)
         self.mqtt.createClient()
         self.mqtt.startConnection()
+        self.db = services.MySQLConnector()
 
     # this includes create all the resources for parking manager
 
     def carAuthentication(self, carId):
-        pass
+        carInDb = self.db.checkCarId(carId)
+        if carInDb:
+            return False  # carId already in db so new car needs to get new id: return false
+        else:
+            self.db.registerCar(carId)
+            return True
 
     def spaceAssignment(self, carId):  # prefered assignemnet???
         pass
 
-    def generatePath(self, carId, rfidTag):
-        pass
+    def generatePath(self, carId, startTag):
+        carState = self.db.getCarState(carId)
+        if carState == 'arriving':
+            endTag = self.db.getAssignedCarToSpace()
+            if not endTag:
+                endTag = self.db.getRandomParkingSpace()[2]
+                self.db.assignCarToSpace(endTag)
+        else:
+            if carState == 'parked':
+                self.db.setCarState(carId, 'leaving')
+                self.db.unassignCarFromSpace(carId)
+            endTag = self.db.getExit()
+
+        return self.getPath(startTag, endTag)
 
     def registerArrival(self, carId):
-        pass
-
-    def processMessage(self):
-        pass
+        carState = self.db.getCarState(carId)
+        if carState == 'arriving':
+            self.db.setCarState(carId, 'parked')
+            return 'parked'
+        else:
+            self.db.deleteCarFromDb(carId)
+            return 'clearName'
 
     def addTag(self, tagId):
         pass
 
-    def processMsg(self):
+    def getPath(self, startTag, endTag):
+        return ['tag1', 'tag2', 'tag3', endTag]
+
+    def processMessage(self):
         msgInfo = self.mqtt.getMsg()
         print(msgInfo)
         topic = msgInfo[0]
@@ -59,4 +83,4 @@ class ParkingManager:
             print('[ERROR]: topic of message not recognised')
 
     while True:
-        processMsg()
+        processMessage()
