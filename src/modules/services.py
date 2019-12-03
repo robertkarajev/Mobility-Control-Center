@@ -3,16 +3,16 @@ import time as tm
 import paho.mqtt.client as mqttClient
 #import RPi.GPIO as GPIO
 
-class MQTTServerClient:
-    def __init__(self, broker_address, broker_password, broker_port = 1883, broker_username = 'server'):
-        self.broker_address = broker_address
-        self.broker_port = broker_port
-        self.broker_username = broker_username
-        self.broker_password = broker_password
+class MqttServerClient:
+    def __init__(self, brokerAddress, brokerPassword, brokerPort = 1883, brokerUsername = 'server'):
+        self.brokerAddress = brokerAddress
+        self.brokerPort = brokerPort
+        self.brokerUsername = brokerUsername
+        self.brokerPassword = brokerPassword
 
     def createClient(self):
         self.client = mqttClient.Client("Server")
-        self.client.username_pw_set(self.broker_username, password = self.broker_password)
+        self.client.username_pw_set(self.brokerUsername, password = self.brokerPassword)
         
         #attach function to callback
         self.client.on_connect = self.on_connect
