@@ -1,13 +1,15 @@
-import main.modules.credentials as cr
-import main.modules.services as sv
+import modules.credentials as cr
+import modules.services as sv
+import testmodules.testservices as tsv
+import modules.timer as tm
 
 class ParkingManager:
 	def __init__(self):
 		mqttBrokerCredentials = cr.getMqttBrokerCredentials()
 		self.mqttServerClient = sv.MqttServerClient(mqttBrokerCredentials[0],
 													mqttBrokerCredentials[1],
-													mqttBrokerCredentials[2],
-													mqttBrokerCredentials[3])
+													mqttBrokerCredentials[3],
+													brokerAddress = mqttBrokerCredentials[2])
 		self.mqttServerClient.createClient()
 		self.mqttServerClient.startConnection()
 
@@ -15,8 +17,8 @@ class ParkingManager:
 		self.mySqlConnector = sv.MySQLConnector(mySqlDbCredentials[0], 
 												mySqlDbCredentials[1],
 												mySqlDbCredentials[2],
-												mySqlDbCredentials[3],
-												mySqlDbCredentials[4])
+												'localhost',
+												self.sshTestEnvironment())
 		self.mySqlConnector.startConnection()
 
 	def carAuthentication(self, carId):
@@ -36,8 +38,11 @@ class ParkingManager:
 	def generatePath(self, carId, startTag):
 		carState = self.mySqlConnector.getCarState(carId)
 		if carState == 'arriving':
-			endTag = self.mySqlConnector.getAssignedCarToSpace(carId)[2]
-			if not endTag:
+			endTag = self.mySqlConnector.getAssignedCarToSpace(carId)
+			print(endTag)
+			if endTag:
+				endTag = endTag[0][2]
+			else:
 				endTag = self.mySqlConnector.getRandomParkingSpace()[2]
 				self.mySqlConnector.assignCarToSpace(carId, endTag)
 		else:
@@ -45,7 +50,6 @@ class ParkingManager:
 				self.mySqlConnector.setCarState(carId, 'leaving')
 				self.mySqlConnector.unassignCarFromSpace(carId)
 			endTag = self.mySqlConnector.getExit()
-
 		return self.getPath(startTag, endTag)
 
 	def registerArrival(self, carId):
@@ -89,3 +93,18 @@ class ParkingManager:
 	def addTag(self, tagId):
 		pass
 
+	#TEST PURPOSES
+	def sshTestEnvironment(self):
+		var = cr.getMySqlDatabaseCredentials()
+		sshConn = tsv.SSHTunnel(var[3], 22, var[0], var[1], 'localhost', var[4])
+		sshConn.createSSHTunnelForwarder()
+		sshConn.startTunnel()
+		timer = tm.Timer()
+		timer.postpone(5, f'ssh connection status: {sshConn.tunnelForwarder.local_is_up((var[3], 22))} ')
+		return sshConn.tunnelForwarder.local_bind_port
+
+manager = ParkingManager()
+while True:
+	manager.processMessage()
+#manager.registerArrival('java')
+#print(manager.registerArrival('lada'))

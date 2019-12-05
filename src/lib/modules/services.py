@@ -6,7 +6,7 @@ import json
 # import RPi.GPIO as GPIO
 
 class MqttServerClient:
-    def __init__(self, port, user, password, brokerAddress = '127.0.0.1'):
+    def __init__(self, user, password, port, brokerAddress = '127.0.0.1'):
         self.user = user                                 # Connection username
         self.password = password   # Connection password
         self.brokerAddress = brokerAddress            # Broker address
@@ -16,7 +16,7 @@ class MqttServerClient:
         self.msg = ''
         self.topic = ''
 
-        print(self.brokerAddress, self.port)
+        print(self.user, self.password, self.brokerAddress, self.port)
 
     def createClient(self):
         self.client = paho.Client("Server")                   # create new instance
@@ -26,7 +26,7 @@ class MqttServerClient:
 
     def startConnection(self):
         try:
-            self.client.connect(self.broker_address, port=self.port)
+            self.client.connect(self.brokerAddress, port=self.port)
 
             # create new thread to process network traffic
             self.client.loop_start()
@@ -90,20 +90,17 @@ class MySQLConnector:
         self.connection.close()
 
     def executeQuery(self, query, values = None):
-        try:
-            cursor = self.connection.cursor()
-            if 'SELECT' in query.upper():
-                cursor.execute(query, values)
-                result = cursor.fetchall()
-                cursor.close()
-                return result
-            else:
-                cursor.execute(query, values)
-                self.connection.commit()
-                cursor.close()
-                return True
-        except Exception:
-            print(Exception)
+        cursor = self.connection.cursor()
+        if 'SELECT' in query.upper():
+            cursor.execute(query, values)
+            result = cursor.fetchall()
+            cursor.close()
+            return result
+        else:
+            cursor.execute(query, values)
+            self.connection.commit()
+            cursor.close()
+            return True
 
     def checkCarId(self, carId):
         query = "SELECT IF(id_car = '"+carId+"', True, False) FROM cars"
@@ -136,7 +133,7 @@ class MySQLConnector:
     def getAssignedCarToSpace(self, carId):
         query = "SELECT * FROM parking_spaces WHERE assigned_car = '"+carId+"'"
         result = self.executeQuery(query)
-        return result[0]
+        return result
 
     def getRandomParkingSpace(self):
         query = "SELECT * FROM parking_spaces WHERE assigned_car IS NULL ORDER BY RAND() LIMIT 1"
@@ -145,10 +142,10 @@ class MySQLConnector:
 
     def assignCarToSpace(self, carId, rfid_tag):
         query = "UPDATE parking_spaces SET assigned_car = '"+carId+"' WHERE rfid_tag = '"+rfid_tag+"'"
-        self.executeQuery(query)
+        self.executeQuery(query)   
 
-    def unassignCarFromSpace(self, rfid_tag):
-        query = "DELETE assigned_car FROM parking_spaces WHERE rfid_tag = '"+rfid_tag+"'"
+    def unassignCarFromSpace(self, car_id):
+        query = "UPDATE parking_spaces SET assigned_car = NULL WHERE assigned_car = '"+car_id+"'"
         self.executeQuery(query)
 
     def isEntryPoint(self, rfid_tag):
