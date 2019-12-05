@@ -7,22 +7,33 @@ class Logger:
             self.loggingLevel = levels.index(loggingLevel)
         self.topic = topic
 
-    def debug(self, msg):
+    def getMsg(self, objects):
+        msg = ''
+        for x in range(len(objects)):
+            msg += ' ' + objects[x]
+        return msg
+
+    def debug(self, *objects):
+        msg = self.getMsg(objects)
         if self.loggingLevel <= 0:
             print('[DEBUG]    ', self.topic, msg)
 
-    def info(self, msg):
+    def info(self, *objects):
+        msg = self.getMsg(objects)
         if self.loggingLevel <= 1:
             print('[INFO]     ', self.topic, msg)
 
-    def warning(self, msg):
+    def warning(self, *objects):
+        msg = self.getMsg(objects)
         if self.loggingLevel <= 2:
             print('[WARNING]  ', self.topic, msg)
 
-    def critical(self, msg):
+    def critical(self, *objects):
+        msg = self.getMsg(objects)
         if self.loggingLevel <= 3:
             print('[CRITICAL] ', self.topic, msg)
 
-    def error(self, msg):
+    def error(self, *objects):
+        msg = self.getMsg(objects)
         if self.loggingLevel <= 4:
             print('[ERROR]    ', self.topic, msg)
