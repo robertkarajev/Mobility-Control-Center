@@ -4,36 +4,33 @@ class Logger:
         if isinstance(loggingLevel, int):
             self.loggingLevel = loggingLevel
         elif isinstance(loggingLevel, str):
-            self.loggingLevel = levels.index(loggingLevel)
+            self.loggingLevel = levels.index(loggingLevel.lower())
         self.topic = topic
 
-    def getMsg(self, objects):
-        msg = ''
-        for x in range(len(objects)):
-            msg += ' ' + objects[x]
-        return msg
+    def print(self, *objects):
+        if objects[1]:
+            objects = objects[:2] + (':',) + objects[2:]
+        if self.topic == '':
+            print(*objects)
+        elif self.topic == objects[1]:
+            print(*objects)
 
-    def debug(self, *objects):
-        msg = self.getMsg(objects)
+    def debug(self, *objects, topic=''):
         if self.loggingLevel <= 0:
-            print('[DEBUG]    ', self.topic, msg)
+            self.print('[DEBUG]   ', topic, *objects)
 
-    def info(self, *objects):
-        msg = self.getMsg(objects)
+    def info(self, *objects, topic=''):
         if self.loggingLevel <= 1:
-            print('[INFO]     ', self.topic, msg)
+            self.print('[INFO]    ', topic, *objects)
 
-    def warning(self, *objects):
-        msg = self.getMsg(objects)
+    def warning(self, *objects, topic=''):
         if self.loggingLevel <= 2:
-            print('[WARNING]  ', self.topic, msg)
+            self.print('[WARNING] ', topic, *objects)
 
-    def critical(self, *objects):
-        msg = self.getMsg(objects)
+    def critical(self, *objects, topic=''):
         if self.loggingLevel <= 3:
-            print('[CRITICAL] ', self.topic, msg)
+            self.print('[CRITICAL]', topic, *objects)
 
-    def error(self, *objects):
-        msg = self.getMsg(objects)
+    def error(self, *objects, topic=''):
         if self.loggingLevel <= 4:
-            print('[ERROR]    ', self.topic, msg)
+            self.print('[ERROR]   ', topic, *objects)
