@@ -2,9 +2,14 @@ import threading
 import paho.mqtt.client as paho
 import json
 
+topCarCall = 'carCall'
+topCon = 'connection'
+
+
 # mockservices eg database connection
 class MySQLConnector:
-    def __init__(self):
+    def __init__(self, logger=None):
+        self.logger = logger
         self.database = []
         self.checkArr = []
 
@@ -25,7 +30,7 @@ class MySQLConnector:
         if carId in self.checkArr:
             return False
         self.checkArr.append(carId)
-        print('known carIds: ', self.checkArr)
+        self.logger.debug(self.checkArr, topic=topCarCall)
         return True
 
     def addTag(self, tag):
@@ -33,7 +38,7 @@ class MySQLConnector:
             return tag + ' already in database'
         else:
             self.database.append(tag)
-            print(self.database)
+            self.logger.info(self.database, topic=topCarCall)
             return tag + ' added to database'
 
     def deleteCar(self, carId):
@@ -42,31 +47,33 @@ class MySQLConnector:
 
 
 class MqttServerClient:
-    def __init__(self, port, user, password, broker_address='127.0.0.1'):
+    def __init__(self, user, password, port, brokerAddress='127.0.0.1', logger=None):
+        self.logger = logger
         self.event = threading.Event()
         self.msgArr = []
+        self.client = None
 
-        self.broker_address = broker_address            # Broker address
-        self.port = port                                     # Broker port
-        self.user = user                                 # Connection username
-        self.password = password   # Connection password
+        self.brokerAddress = brokerAddress  # Broker address
+        self.port = port                    # Broker port
+        self.user = user                    # Connection username
+        self.password = password            # Connection password
 
-        print(self.broker_address, self.port)
+        logger.info(self.brokerAddress, self.port, topic=topCon)
 
     def createClient(self):
-        self.client = paho.Client("Server")                   # create new instance
+        self.client = paho.Client("testServer")                   # create new instance
         self.client.username_pw_set(self.user, password=self.password)  # set username and password
         self.client.on_connect = self.on_connect              # attach function to callback
         self.client.on_message = self.setMsg                  # attach function to callback
 
     def startConnection(self):
         try:
-            self.client.connect(self.broker_address, port=self.port)
+            self.client.connect(self.brokerAddress, port=self.port)
 
             # create new thread to process network traffic
             self.client.loop_start()
         except:
-            print('[INFO] Connection failed...')
+            self.logger.warning('could not connect, continue trying', topic=topCon)
 
     def stopConnection(self):
         self.client.disconnect()
@@ -74,21 +81,21 @@ class MqttServerClient:
 
     def on_connect(self, client, userdata, flags, connectionResult):
         if connectionResult == 0:
-            print('[INFO] Connection to broker successful')
+            self.logger.info('Connection to broker successful', topic=topCon)
             self.client.subscribe('GP', 1)  # Get Path
             self.client.subscribe('LT', 1)  # arrived at Last Tag
             self.client.subscribe('AU', 1)  # AUthorize
             self.client.subscribe('RT', 1)  # Read Tag
         elif connectionResult == 1:
-            print('[ERROR] Connection refused - incorrect protocol version')
+            self.logger.error('incorrect protocol version', topic=topCon)
         elif connectionResult == 2:
-            print('[ERROR] Connection refused - invalid client identifier')
+            self.logger.error('invalid client identifier', topic=topCon)
         elif connectionResult == 3:
-            print('[ERROR] Connection refused - server unavailable')
+            self.logger.error('server unavailable', topic=topCon)
         elif connectionResult == 4:
-            print('[ERROR] Connection refused - bad username or password')
+            self.logger.error('bad username or password', topic=topCon)
         elif connectionResult == 5:
-            print('[ERROR] Connection refused - not authorised')
+            self.logger.error('not authorised', topic=topCon)
 
     def sendPublish(self, topic, message, qos):
         self.client.publish(topic, json.dumps(message), qos)

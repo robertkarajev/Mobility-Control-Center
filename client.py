@@ -3,22 +3,70 @@ import random
 import string
 import json
 import time
+import logger
+
+logger = logger.Logger(0)
 
 
 class MQTTClient:
-    # create a random string containing letters and numbers with a variable length
-    def randomString(self, stringLength):
-        letters = string.ascii_letters + '0123456789'
-        return ''.join(random.choice(letters) for i in range(stringLength))
+    def __init__(self, user, password, port, brokerAddress='127.0.0.1'):
+        # variables that can be changed
+        self.retrySendingAfterSeconds = 5
+        self.maxAmountRetriesSending = 5
+        self.carIdLength = 4
+
+        # variables that should not be changed
+        self.brokerAddress = brokerAddress   # Broker address
+        self.port = port               # Broker port
+        self.user = user               # Connection username
+        self.password = password       # Connection password
+
+        # init here to prevent warnings
+        self.authorized = None
+        self.client = None
+        self.name = None
+
+        self.msg = 'get'
+
+        logger.info('broker address:', self.brokerAddress, 'port:', self.port, topic='connection')
+
+    def createClient(self):
+        self.getNameFile()
+        if self.name:
+            self.authorized = True
+        else:
+            self.authorized = False
+            self.name = self.generateName(self.carIdLength)
+        self.client = paho.Client(self.name + self.generateName(self.carIdLength))  # create new instance
+        self.client.username_pw_set(self.user, password=self.password)  # set username and password
+        self.client.on_connect = self.on_connect  # attach function to callback
+        self.client.on_message = self.on_message  # attach function to callback
+        if self.authorized:
+            logger.info('id was authorized before already', topic='connection')
+            self.getAuth()
+        else:
+            logger.info('requested authorization', topic='connection')
+            self.getAuth()
+
+    def startConnection(self):
+        try:
+            self.client.connect(self.brokerAddress, port=self.port)  # connect to broker
+            self.client.loop_start()  # start the loop
+        except:
+            logger.error('could not connect, continue trying', topic='connection')
+
+    def stopConnection(self):
+        self.client.disconnect()
+        self.client.loop_stop()
 
     # callback function for when the script get a CONNACK from the broker
     # subscribes to own name so it can receive personal messages from the server-client
     def on_connect(self, client, userdata, flags, rc):
         client.subscribe(self.name, 1)
         if rc == 0:
-            print("Connected to broker")
+            logger.info("Connected to broker", topic='connection')
         else:
-            print("Connection failed")
+            logger.error("Connection failed", topic='connection')
 
     def setNameFile(self):
         f = open("carName.txt", "w+")
@@ -32,6 +80,7 @@ class MQTTClient:
     def clearNameFile(self):
         f = open("carName.txt", "w+")
         f.write('')
+        self.authorized = False
         f.close()
 
     # callback function for when a message is received from the broker
@@ -44,23 +93,28 @@ class MQTTClient:
                 elif msg == 'clearName':
                     self.clearNameFile()
                     self.authorized = False
+                elif msg == 'parked':
+                    logger.info('confirmation for parking received', topic='message')
+                elif str(msg) == 'False':
+                    logger.info('id was indeed already in database', topic='message')
+                elif str(msg) == 'True':
+                    logger.error('id not in database while it should have been', topic='message')
                 else:
-                    print('[ERROR] message received not a list')
+                    logger.error('message received not a list:', msg, topic='message')
             else:
-                print(self.authorized)
                 self.msg = msg
         else:
-            print('message that was not intended for you has been received')
+            logger.error('message that was not intended for you has been received:', message, topic='message')
 
     def authLogic(self, msg):
         if msg:  # msg == True
             self.setNameFile()
             self.authorized = True
-            print('ID authorized by server')
+            logger.info('ID authorized by server', topic='message')
         else:
-            print('ID not authorized by server')
+            logger.info('ID not authorized by server', topic='message')
             self.client.unsubscribe(self.name)
-            self.name = self.randomString(self.carIdLength)
+            self.name = self.generateName(self.carIdLength)
             self.client.subscribe(self.name, 1)
             self.getAuth()
 
@@ -83,7 +137,7 @@ class MQTTClient:
             if time.time() - start > self.retrySendingAfterSeconds:
                 if counter >= self.maxAmountRetriesSending:
                     return 'took too long try sending new tag'
-                print('retry sending getPath')
+                logger.warning('retry sending getPath')
                 self.sendPublish('GP', self.name + ',' + str(tagId), 1)
                 counter += 1
                 start = time.time()
@@ -93,43 +147,7 @@ class MQTTClient:
     def arrivedAtLastTag(self):
         self.sendPublish('LT', self.name, 1)
 
-    def __init__(self, brokerAddress, brokerPort, brokerUser, brokerPassword, localTesting):
-        # variables that can be changed
-        self.retrySendingAfterSeconds = 5
-        self.maxAmountRetriesSending = 5
-        self.carIdLength = 4
-
-        self.getNameFile()
-        self.authorized = True
-        if not self.name:
-            self.authorized = False
-            self.name = self.randomString(self.carIdLength)
-        print(self.name)
-
-        # variables that should not be changed
-        self.brokerAddress = brokerAddress   # Broker address
-        self.port = brokerPort               # Broker port
-        self.user = brokerUser               # Connection username
-        self.password = brokerPassword       # Connection password
-
-        if localTesting:
-            self.brokerAddress = "127.0.0.1"  # Broker address
-
-        self.client = paho.Client(self.name)                            # create new instance
-        self.client.username_pw_set(self.user, password=self.password)  # set username and password
-        self.client.on_connect = self.on_connect                        # attach function to callback
-        self.client.on_message = self.on_message                        # attach function to callback
-        self.msg = 'get'
-
-        print('broker address: ' + self.brokerAddress, ' port: ', self.port)
-
-        try:
-            self.client.connect(self.brokerAddress, port=self.port)  # connect to broker
-        except:
-            print('could not connect, continue trying')
-
-        self.client.loop_start()  # start the loop
-        if self.authorized:
-            print('id was authorized before already')
-        else:
-            self.getAuth()
+    # create a random string containing letters and numbers with a variable length
+    def generateName(self, stringLength):
+        letters = string.ascii_letters + '0123456789'
+        return ''.join(random.choice(letters) for i in range(stringLength))
