@@ -5,6 +5,8 @@ import threading
 import json
 # import RPi.GPIO as GPIO
 
+topSql = 'MySqlConnector'
+
 class MqttServerClient:
     def __init__(self, user, password, port, brokerAddress = '127.0.0.1'):
         self.user = user                                 # Connection username
@@ -38,6 +40,7 @@ class MqttServerClient:
         self.client.loop_stop()
 
     def on_connect(self, client, userdata, flags, connectionResult):
+        errorMessage = '[ERROR] Connection refused'
         if connectionResult == 0:
             print('[INFO] Connection to broker successful')
             self.client.subscribe('GP', 1)  # Get Path
@@ -45,15 +48,15 @@ class MqttServerClient:
             self.client.subscribe('AU', 1)  # AUthorize
             self.client.subscribe('RT', 1)  # Read Tag
         elif connectionResult == 1:
-            print('[ERROR] Connection refused - incorrect protocol version')
+            print(errorMessage, '- incorrect protocol version')
         elif connectionResult == 2:
-            print('[ERROR] Connection refused - invalid client identifier')
+            print(errorMessage, '- invalid client identifier')
         elif connectionResult == 3:
-            print('[ERROR] Connection refused - server unavailable')
+            print(errorMessage, '- server unavailable')
         elif connectionResult == 4:
-            print('[ERROR] Connection refused - bad username or password')
+            print(errorMessage, '- bad username or password')
         elif connectionResult == 5:
-            print('[ERROR] Connection refused - not authorised')
+            print(errorMessage, '- not authorised')
 
     def sendPublish(self, topic, message, qos):
         self.client.publish(topic, json.dumps(message), qos)
@@ -67,17 +70,17 @@ class MqttServerClient:
         self.returnMsg.wait()
         self.returnMsg.clear()
         return [self.topic, self.msg]
-    #def sendPublish(self, topic, message, qos):
-    #    self.client.publish(topic, json.dumps(message), qos)
 
 
-class MySQLConnector:
-    def __init__(self, username, password, databaseName, databaseHost, databasePort):
+class MySqlConnector:
+    def __init__(self, username, password, databaseName, databaseHost, databasePort, logger = None):
         self.username = username
         self.password = password
         self.databaseName = databaseName
         self.databaseHost = databaseHost
         self.databasePort = databasePort
+        self.logger = logger
+        self.logger.debug('connection arguments:', self.username, self.password, self.databaseHost, self.databasePort, topic = topSql)
 
     def startConnection(self):
         self.connection = mysqlconn.MySQLConnection(username = self.username,
@@ -85,21 +88,26 @@ class MySQLConnector:
                                          database = self.databaseName,
                                          host = self.databaseHost,
                                          port = self.databasePort)
+        self.logger.info('connection established.', topic = topSql)
 
     def closeConnection(self):
         self.connection.close()
+        self.logger.info('connection closed.', topic = topSql)
 
     def executeQuery(self, query, values = None):
+        self.logger.debug('executing query:', query, 'values:', values, topic = topSql)
         cursor = self.connection.cursor()
         if 'SELECT' in query.upper():
             cursor.execute(query, values)
             result = cursor.fetchall()
             cursor.close()
+            self.logger.debug('end result:', result, topic = topSql)
             return result
         else:
             cursor.execute(query, values)
             self.connection.commit()
             cursor.close()
+            self.logger.debug('end result:', True, topic = topSql)
             return True
 
     def checkCarId(self, carId):
@@ -108,18 +116,16 @@ class MySQLConnector:
         return (1,) in result
 
     def registerCar(self, carId):
-        if not self.checkCarId(carId):
-            query = "INSERT INTO cars VALUES ('"+carId+"', 'arriving')"
-            self.executeQuery(query)
-            return True
-        else:
-            return False
+        query = "INSERT INTO cars VALUES ('"+carId+"', 'arriving')"
+        self.executeQuery(query)
+        return True
+        
 
     def deleteCar(self, carId):
         query = "DELETE FROM cars WHERE id_car = '"+carId+"'"
         self.executeQuery(query)
 
-    #if lwaving or parked: return path to exit
+    #if lwaving or parked: return path to exitF
     #else assign parking space and return path to said parking space
     def getCarState(self, carId):
         query = "SELECT state FROM cars WHERE id_car = '"+carId+"'"
