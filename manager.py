@@ -44,6 +44,7 @@ def processMsg():
 
     else:
         logger.error('topic of message not recognised')
+    print()
 
 
 while True:

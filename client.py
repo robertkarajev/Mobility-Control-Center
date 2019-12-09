@@ -3,13 +3,15 @@ import random
 import string
 import json
 import time
-import logger
 
-logger = logger.Logger(0)
+topFile = 'file interaction'
+topCon = 'connection'
+topMsg = 'message'
 
 
 class MQTTClient:
-    def __init__(self, user, password, port, brokerAddress='127.0.0.1'):
+    def __init__(self, user, password, port, brokerAddress='127.0.0.1', logger=None):
+        self.logger = logger
         # variables that can be changed
         self.retrySendingAfterSeconds = 5
         self.maxAmountRetriesSending = 5
@@ -28,7 +30,7 @@ class MQTTClient:
 
         self.msg = 'get'
 
-        logger.info('broker address:', self.brokerAddress, 'port:', self.port, topic='connection')
+        logger.info('broker address:', self.brokerAddress, 'port:', self.port, topic=topCon)
 
     def createClient(self):
         self.getNameFile()
@@ -42,10 +44,10 @@ class MQTTClient:
         self.client.on_connect = self.on_connect  # attach function to callback
         self.client.on_message = self.on_message  # attach function to callback
         if self.authorized:
-            logger.info('id was authorized before already', topic='connection')
+            self.logger.info('id was authorized before already', topic=topCon)
             self.getAuth()
         else:
-            logger.info('requested authorization', topic='connection')
+            self.logger.info('requested authorization', topic=topCon)
             self.getAuth()
 
     def startConnection(self):
@@ -53,7 +55,7 @@ class MQTTClient:
             self.client.connect(self.brokerAddress, port=self.port)  # connect to broker
             self.client.loop_start()  # start the loop
         except:
-            logger.error('could not connect, continue trying', topic='connection')
+            self.logger.error('could not connect, continue trying', topic=topCon)
 
     def stopConnection(self):
         self.client.disconnect()
@@ -64,24 +66,27 @@ class MQTTClient:
     def on_connect(self, client, userdata, flags, rc):
         client.subscribe(self.name, 1)
         if rc == 0:
-            logger.info("Connected to broker", topic='connection')
+            self.logger.info("Connected to broker", topic=topCon)
         else:
-            logger.error("Connection failed", topic='connection')
+            self.logger.error("Connection failed", topic=topCon)
 
     def setNameFile(self):
         f = open("carName.txt", "w+")
         f.write(self.name)
         f.close()
+        self.logger.debug('name set', topic=topFile)
 
     def getNameFile(self):
         f = open("carName.txt", "r+")
         self.name = f.read()
+        self.logger.debug('name get', topic=topFile)
 
     def clearNameFile(self):
         f = open("carName.txt", "w+")
         f.write('')
         self.authorized = False
         f.close()
+        self.logger.debug('name cleared', topic=topFile)
 
     # callback function for when a message is received from the broker
     def on_message(self, client, userdata, message):
@@ -94,25 +99,25 @@ class MQTTClient:
                     self.clearNameFile()
                     self.authorized = False
                 elif msg == 'parked':
-                    logger.info('confirmation for parking received', topic='message')
+                    self.logger.info('confirmation for parking received', topic=topMsg)
                 elif str(msg) == 'False':
-                    logger.info('id was indeed already in database', topic='message')
+                    self.logger.info('id was indeed already in database', topic=topMsg)
                 elif str(msg) == 'True':
-                    logger.error('id not in database while it should have been', topic='message')
+                    self.logger.error('id not in database while it should have been', topic=topMsg)
                 else:
-                    logger.error('message received not a list:', msg, topic='message')
+                    self.logger.error('message received not a list:', msg, topic=topMsg)
             else:
                 self.msg = msg
         else:
-            logger.error('message that was not intended for you has been received:', message, topic='message')
+            self.logger.error('message that was not intended for you has been received:', message, topic=topMsg)
 
     def authLogic(self, msg):
         if msg:  # msg == True
             self.setNameFile()
             self.authorized = True
-            logger.info('ID authorized by server', topic='message')
+            self.logger.info('ID authorized by server', topic=topMsg)
         else:
-            logger.info('ID not authorized by server', topic='message')
+            self.logger.info('ID not authorized by server', topic=topMsg)
             self.client.unsubscribe(self.name)
             self.name = self.generateName(self.carIdLength)
             self.client.subscribe(self.name, 1)
@@ -137,7 +142,7 @@ class MQTTClient:
             if time.time() - start > self.retrySendingAfterSeconds:
                 if counter >= self.maxAmountRetriesSending:
                     return 'took too long try sending new tag'
-                logger.warning('retry sending getPath')
+                self.logger.warning('retry sending getPath')
                 self.sendPublish('GP', self.name + ',' + str(tagId), 1)
                 counter += 1
                 start = time.time()
