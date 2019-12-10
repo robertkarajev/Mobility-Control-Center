@@ -14,14 +14,15 @@ class Node:
 
 
 class Pathfinding:
-    grid = [
-        [1, 1, 1, 1, 0, 1, ],
-        [1, 0, 0, 0, 0, 1, ],
-        [1, 0, 1, 1, 0, 1, ],
-        [1, 0, 1, 1, 0, 1, ],
-        [1, 0, 0, 0, 0, 1, ],
-        [1, 0, 1, 1, 1, 1, ]
-    ]
+    def __init__(self):
+        self.grid = [
+            [1, 1, 1, 1, 0, 1, ],
+            [1, 0, 0, 0, 0, 1, ],
+            [1, 0, 1, 1, 0, 1, ],
+            [1, 0, 1, 1, 0, 1, ],
+            [1, 0, 0, 0, 0, 1, ],
+            [1, 0, 1, 1, 1, 1, ]
+        ]
 
     def astar(self, maze, start, end):
         """Returns a list of tuples as a path from the given start to the given end in the given maze"""
@@ -158,29 +159,24 @@ class Pathfinding:
                 direction = 'V'
             pa.append([(y, x), direction])
 
-            prevIndex = cor
+            prevCor = cor
         return pa
 
+    def setCoordinateZero(self, endCoordinates):
+        self.grid[endCoordinates[0]][endCoordinates[1]] = 0
+
     def getPath(self, startCoordinates, endCoordinates, prevCoordinates):
-        grid = self.getGrid()
-        path = self.astar(grid, startCoordinates, endCoordinates)
+        self.setCoordinateZero(endCoordinates)
+        path = self.astar(self.grid, startCoordinates, endCoordinates)
         return self.getDirections(path, prevCoordinates)
 
 
 def main():
-    grid = [
-        [1, 1, 1, 1, 0, 1, ],
-        [1, 0, 0, 0, 0, 1, ],
-        [1, 0, 1, 1, 0, 0, ],
-        [1, 0, 1, 1, 0, 1, ],
-        [1, 0, 0, 0, 0, 1, ],
-        [1, 0, 1, 1, 1, 1, ]
-    ]
     start = (5, 1)
     end = (2, 5)
 
     pathfinding = Pathfinding()
-    path = pathfinding.astar(grid, start, end)
+    path = pathfinding.getPath(start, end, '')
     print(pathfinding.getDirections(path))
 
 
