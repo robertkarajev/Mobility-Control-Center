@@ -132,25 +132,25 @@ class Pathfinding:
     def setGrid(self, grid):
         self.grid = grid
 
-    def getDirections(self, path, prevIndex=[]):
+    def getDirections(self, path, prevCor=[]):
         print(path)
         direction = ''
         pa = []
         for index, cor in enumerate(path):
             y = cor[0]
             x = cor[1]
-            if prevIndex and index + 1 < len(path):
+            if prevCor and index + 1 < len(path):
                 if x == path[index + 1][1]:
-                    if x == prevIndex[1]:
+                    if x == prevCor[1]:
                         direction = 'V'
-                    elif x < prevIndex[1]:
+                    elif x < prevCor[1]:
                         direction = 'R'
                     else:
                         direction = 'L'
                 elif y == path[index + 1][0]:
-                    if y == prevIndex[0]:
+                    if y == prevCor[0]:
                         direction = 'V'
-                    elif y < prevIndex[0]:
+                    elif y < prevCor[0]:
                         direction = 'R'
                     else:
                         direction = 'L'
@@ -160,6 +160,11 @@ class Pathfinding:
 
             prevIndex = cor
         return pa
+
+    def getPath(self, startCoordinates, endCoordinates, prevCoordinates):
+        grid = self.getGrid()
+        path = self.astar(grid, startCoordinates, endCoordinates)
+        return self.getDirections(path, prevCoordinates)
 
 
 def main():
