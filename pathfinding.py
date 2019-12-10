@@ -132,9 +132,8 @@ class Pathfinding:
     def setGrid(self, grid):
         self.grid = grid
 
-    def getDirections(self, path):
+    def getDirections(self, path, prevIndex=[]):
         print(path)
-        prevIndex = []
         pa = []
         for index, cor in enumerate(path):
             y = cor[0]
@@ -155,14 +154,14 @@ class Pathfinding:
                     else:
                         pa.append((y, x, 'L'))
             else:
-                pa.append((y, x, 'V'))
+                pa.append([(y, x), 'V'])
             prevIndex = cor
         return pa
 
 
 def main():
     grid = [
-        [1, 1, 1, 1, 1, 1, ],
+        [1, 1, 1, 1, 0, 1, ],
         [1, 0, 0, 0, 0, 1, ],
         [1, 0, 1, 1, 0, 0, ],
         [1, 0, 1, 1, 0, 1, ],

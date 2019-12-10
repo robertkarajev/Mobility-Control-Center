@@ -11,14 +11,14 @@ brokerInfo = mqttBrokerInfo.getmqttinfo()
 mqttClient = client.MQTTClient(brokerInfo[0], brokerInfo[1], brokerInfo[2], brokerInfo[3], logger)
 mqttClient.createClient()
 mqttClient.startConnection()
-time.sleep(.3)  # purely so i get a message from the server b4 i start to be able to read
+#time.sleep(.3)  # purely so i get a message from the server b4 i start to be able to read
 
 
 def waitCardRead():
     while True:
         print('Enter new RFID tag to get path: ')
         tagRead = str(input())
-        if tagRead == 'lastTag':
+        if tagRead == 'lt':
             mqttClient.arrivedAtLastTag()
         else:
             path = mqttClient.getPath(tagRead)

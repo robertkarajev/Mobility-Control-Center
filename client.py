@@ -133,9 +133,9 @@ class MQTTClient:
         self.sendPublish('AU', self.name, 1)
 
     # get a path by sending the name of the car as well as the RFID tag just read(GetPath)
-    def getPath(self, tagId):
+    def getPath(self, tagId, prevTagId=''):
         self.msg = 'get'
-        self.sendPublish('GP', self.name + ',' + str(tagId), 1)
+        self.sendPublish('GP', self.name + ',' + str(tagId) + ',' + str(prevTagId), 1)
         start = time.time()
         counter = 0
         while self.msg == 'get':
@@ -143,7 +143,7 @@ class MQTTClient:
                 if counter >= self.maxAmountRetriesSending:
                     return 'took too long try sending new tag'
                 self.logger.warning('retry sending getPath')
-                self.sendPublish('GP', self.name + ',' + str(tagId), 1)
+                self.sendPublish('GP', self.name + ',' + str(tagId) + ',' + str(prevTagId), 1)
                 counter += 1
                 start = time.time()
         return self.msg
