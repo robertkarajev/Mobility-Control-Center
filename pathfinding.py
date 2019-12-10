@@ -112,29 +112,18 @@ class Pathfinding:
                 # Add the child to the open list
                 open_list.append(child)
 
-    def getGrid(self):
-        return self.grid
-
-    def setGrid(self, grid):
-        self.grid = grid
-
     def printGrid(self, grid):
         for i in grid:
             print(i)
 
-    def setGridRoad(self, coordinates):
-        ycor = coordinates[0]
-        xcor = coordinates[1]
-        self.grid[ycor][xcor] = 0
-
     def getGridDimensions(self, roadsAndSpaces):
         biggestY = 0
         biggestX = 0
-        for i in roadsAndSpaces:
-            if i[1][0] > biggestY:
-                biggestY = i[1][0]
-            if i[1][1] > biggestX:
-                biggestX = i[1][1]
+        for tag, (y, x) in roadsAndSpaces:
+            if y > biggestY:
+                biggestY = y
+            if x > biggestX:
+                biggestX = x
         return [biggestY, biggestX]
 
     def generateGrid(self, roadsAndSpaces, roads):
@@ -145,19 +134,23 @@ class Pathfinding:
             for j in range(dimensions[1] + 1):
                 self.grid[i].append(1)
 
-        for i in roads:
-            self.setGridRoad(i[1])
+        for i, (y, x) in roads:
+            # noinspection PyTypeChecker
+            self.grid[y][x] = 0
 
-    def getDirectionsBeta(self, path, prevCor=[]):
+    def getDirectionsBeta(self, path, prevCor=None):
+        if prevCor is None:
+            prevCor = []
         direction = ''
         directions = []
-        for index, cor in enumerate(path):
-            y = cor[0]
-            x = cor[1]
+        for index, (y, x) in enumerate(path):
             if prevCor and index + 1 < len(path):
                 if x == path[index + 1][1]:
                     if x == prevCor[1]:
-                        direction = 'V'
+                        if path[index + 1] == prevCor:
+                            direction = 'A'
+                        else:
+                            direction = 'V'
                     elif x < prevCor[1]:
                         direction = 'R'
                     else:
@@ -170,26 +163,27 @@ class Pathfinding:
                     else:
                         direction = 'L'
                 directions.append(direction)
-            prevCor = cor
+            prevCor = (y, x)
         return self.specifyDirections(directions)
 
     def specifyDirections(self, directions):
         specificDirections = []
-        distanceBetweenTags = self.distanceBetweenTags
-        for i in range(len(directions)):
-            if directions[i] == 'V':
-                distanceBetweenTags += self.distanceBetweenTags
+        distanceTillTurn = self.distanceBetweenTags
+        for direction in directions:
+            if direction == 'V':
+                distanceTillTurn += self.distanceBetweenTags
             else:
-                specificDirections.append(str(distanceBetweenTags) + directions[i])
+                specificDirections.append(str(distanceTillTurn) + direction)
                 distanceBetweenTags = self.distanceBetweenTags
+        specificDirections.append('arrived')
         return specificDirections
 
-    def getDirections(self, path, prevCor=[]):
+    def getDirections(self, path, prevCor=None):
+        if prevCor is None:
+            prevCor = []
         direction = ''
         pathWithDirections = []
-        for index, cor in enumerate(path):
-            y = cor[0]
-            x = cor[1]
+        for index, (y, x) in enumerate(path):
             if prevCor and index + 1 < len(path):
                 if x == path[index + 1][1]:
                     if x == prevCor[1]:
@@ -209,38 +203,39 @@ class Pathfinding:
                 direction = 'V'
             pathWithDirections.append([(y, x), direction])
 
-            prevCor = cor
+            prevCor = (y, x)
         return pathWithDirections
 
-    def setCoordinateZero(self, grid, endCoordinates):
-        grid[endCoordinates[0]][endCoordinates[1]] = 0
+    def setCoordinateZero(self, grid, *coordinates):
+        for (y, x) in coordinates:
+            grid[y][x] = 0
         return grid
 
     def getPath(self, startCoordinates, endCoordinates, prevCoordinates):
-        grid = self.setCoordinateZero(self.grid, endCoordinates)
-        grid = self.setCoordinateZero(grid, startCoordinates)
+        grid = self.setCoordinateZero(self.grid, startCoordinates, endCoordinates)
         self.printGrid(grid)
         path = self.astar(grid, startCoordinates, endCoordinates)
-        # return [path, self.getDirectionsBeta(path, prevCoordinates)]
-        return self.getDirections(path, prevCoordinates)
+        return [path, self.getDirectionsBeta(path, prevCoordinates)]
+        # return self.getDirections(path, prevCoordinates)
 
 
 def main():
     start = (5, 1)
     end = (2, 5)
-    roads = [('5c63fffe', (5,1)), ('tag02', (4,1)), ('tag03', (3,1)), ('tag04', (2,1)), ('tag05', (1,1)), ('tag06', (1,2)),
-             ('tag07', (1,3)), ('tag08', (1,4)), ('tag09', (0,4)), ('tag10', (2,4)), ('tag11', (3,4)), ('tag12', (4,4)),
-             ('tag13', (4,3)), ('tag14', (4,2))]
+    roads = [('tag01', (5, 1)), ('tag02', (4, 1)), ('tag03', (3, 1)), ('tag04', (2, 1)), ('tag05', (1, 1)),
+             ('tag06', (1, 2)), ('tag07', (1, 3)), ('tag08', (1, 4)), ('tag09', (0, 4)), ('tag10', (2, 4)),
+             ('tag11', (3, 4)), ('tag12', (4, 4)), ('tag13', (4, 3)), ('tag14', (4, 2))]
 
-    parkingSpaces = [('tag15', (4,0)), ('tag16', (3,0)), ('tag17', (2,0)), ('tag18', (1,0)), ('tag19', (0,1)),
-                     ('tag20', (0,2)), ('tag21', (0,3)), ('tag22', (1,5)), ('tag23', (2,5)), ('tag24', (3,5)),
-                     ('tag25', (4,5)), ('tag26', (5,4)), ('tag27', (5,3)), ('tag28', (5,2)), ('tag29', (2,2)),
-                     ('tag30', (2,3)), ('tag31', (3,2)), ('tag32', (3,3))]
+    parkingSpaces = [('tag15', (4, 0)), ('tag16', (3, 0)), ('tag17', (2, 0)), ('tag18', (1, 0)), ('tag19', (0, 1)),
+                     ('tag20', (0, 2)), ('tag21', (0, 3)), ('tag22', (1, 5)), ('tag23', (2, 5)), ('tag24', (3, 5)),
+                     ('tag25', (4, 5)), ('tag26', (5, 4)), ('tag27', (5, 3)), ('tag28', (5, 2)), ('tag29', (2, 2)),
+                     ('tag30', (2, 3)), ('tag31', (3, 2)), ('tag32', (3, 3))]
 
     roadsAndSpaces = roads + parkingSpaces
 
     pathfinding = Pathfinding(roadsAndSpaces, roads)
     print(pathfinding.getPath(start, end, ''))
+
 
 if __name__ == '__main__':
     main()
