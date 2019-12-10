@@ -15,6 +15,7 @@ class Node:
 
 class Pathfinding:
     def __init__(self, roadsAndSpaces, roads):
+        self.distanceBetweenTags = 100  # in centimeters
         self.grid = []
         self.generateGrid(roadsAndSpaces, roads)
 
@@ -147,8 +148,43 @@ class Pathfinding:
         for i in roads:
             self.setGridRoad(i[1])
 
+    def getDirectionsBeta(self, path, prevCor=[]):
+        direction = ''
+        directions = []
+        for index, cor in enumerate(path):
+            y = cor[0]
+            x = cor[1]
+            if prevCor and index + 1 < len(path):
+                if x == path[index + 1][1]:
+                    if x == prevCor[1]:
+                        direction = 'V'
+                    elif x < prevCor[1]:
+                        direction = 'R'
+                    else:
+                        direction = 'L'
+                elif y == path[index + 1][0]:
+                    if y == prevCor[0]:
+                        direction = 'V'
+                    elif y < prevCor[0]:
+                        direction = 'R'
+                    else:
+                        direction = 'L'
+                directions.append(direction)
+            prevCor = cor
+        return self.specifyDirections(directions)
+
+    def specifyDirections(self, directions):
+        specificDirections = []
+        distanceBetweenTags = self.distanceBetweenTags
+        for i in range(len(directions)):
+            if directions[i] == 'V':
+                distanceBetweenTags += self.distanceBetweenTags
+            else:
+                specificDirections.append(str(distanceBetweenTags) + directions[i])
+                distanceBetweenTags = self.distanceBetweenTags
+        return specificDirections
+
     def getDirections(self, path, prevCor=[]):
-        print(path)
         direction = ''
         pathWithDirections = []
         for index, cor in enumerate(path):
@@ -176,9 +212,6 @@ class Pathfinding:
             prevCor = cor
         return pathWithDirections
 
-    def specifyDirections(self, path):
-        a=0# make directions useable by car
-
     def setCoordinateZero(self, grid, endCoordinates):
         grid[endCoordinates[0]][endCoordinates[1]] = 0
         return grid
@@ -188,13 +221,14 @@ class Pathfinding:
         grid = self.setCoordinateZero(grid, startCoordinates)
         self.printGrid(grid)
         path = self.astar(grid, startCoordinates, endCoordinates)
+        # return [path, self.getDirectionsBeta(path, prevCoordinates)]
         return self.getDirections(path, prevCoordinates)
 
 
 def main():
     start = (5, 1)
     end = (2, 5)
-    roads = [('tag01', (5,1)), ('tag02', (4,1)), ('tag03', (3,1)), ('tag04', (2,1)), ('tag05', (1,1)), ('tag06', (1,2)),
+    roads = [('5c63fffe', (5,1)), ('tag02', (4,1)), ('tag03', (3,1)), ('tag04', (2,1)), ('tag05', (1,1)), ('tag06', (1,2)),
              ('tag07', (1,3)), ('tag08', (1,4)), ('tag09', (0,4)), ('tag10', (2,4)), ('tag11', (3,4)), ('tag12', (4,4)),
              ('tag13', (4,3)), ('tag14', (4,2))]
 
