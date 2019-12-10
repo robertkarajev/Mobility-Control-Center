@@ -11,7 +11,7 @@ class Main:
 	
 	def run(self):
 		while True:
-			receive_tag_id = wg.Wiegand.run()
+			receive_tag_id, previous_tag = wg.Wiegand.run()
 			#receive_tag_id = str(input())
 			if not self.verifier.verify_path(receive_tag_id):
 				path = self.mqtt.getPath(receive_tag_id,'get') # Returns a list
