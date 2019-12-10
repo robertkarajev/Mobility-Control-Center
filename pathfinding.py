@@ -134,6 +134,7 @@ class Pathfinding:
 
     def getDirections(self, path, prevIndex=[]):
         print(path)
+        direction = ''
         pa = []
         for index, cor in enumerate(path):
             y = cor[0]
@@ -141,20 +142,22 @@ class Pathfinding:
             if prevIndex and index + 1 < len(path):
                 if x == path[index + 1][1]:
                     if x == prevIndex[1]:
-                        pa.append((y, x, 'V'))
+                        direction = 'V'
                     elif x < prevIndex[1]:
-                        pa.append((y, x, 'R'))
+                        direction = 'R'
                     else:
-                        pa.append((y, x, 'L'))
+                        direction = 'L'
                 elif y == path[index + 1][0]:
                     if y == prevIndex[0]:
-                        pa.append((y, x, 'V'))
+                        direction = 'V'
                     elif y < prevIndex[0]:
-                        pa.append((y, x, 'R'))
+                        direction = 'R'
                     else:
-                        pa.append((y, x, 'L'))
+                        direction = 'L'
             else:
-                pa.append([(y, x), 'V'])
+                direction = 'V'
+            pa.append([(y, x), direction])
+
             prevIndex = cor
         return pa
 
