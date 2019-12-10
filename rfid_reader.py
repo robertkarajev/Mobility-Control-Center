@@ -4,7 +4,7 @@
 #white/data1 is pin 13
 #For Example Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
 import time as tm
-
+import sys
 import RPi.GPIO as GPIO
 
 class Wiegand:
@@ -14,7 +14,7 @@ class Wiegand:
 		self.data1 = data1
 		self.bits = bits
 		
-		self.previous_id = None
+		self.previous_id = ""
 		
 		self.setup()
 	
@@ -63,14 +63,16 @@ class Wiegand:
 	
 	def get_previous_id(self, id):
 		
-		if self.previous_id is None:
-			self.previous_id = id
-		elif self.previous_id == id:
-			return id
-		
+		if id:	
+			print("here", id)
+			if self.previous_id != id:
+				return_old_id = self.previous_id
+				self.previous_id = id
+				return return_old_id	
+
 	def run(self):
 		new_id = self.retrieve_id(self.bits)
-		previous_id = self.previous_id(data)
+		previous_id = self.get_previous_id(new_id)
 		tm.sleep(0.01)
 		return new_id, previous_id	
 
@@ -88,7 +90,7 @@ class ParkingVerifier:
 	def change_path (self, path):
 		self.retrieved_path = path
 		
-
+'''
 print ("Read card")
 wg = Wiegand ()
 while True:
@@ -99,3 +101,5 @@ while True:
 	except KeyboardInterrupt:
 		GPIO.cleanup ()
 		print ("Clean exit by user")
+		sys.exit()
+'''
