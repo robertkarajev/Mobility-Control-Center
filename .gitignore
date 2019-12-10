@@ -2,3 +2,5 @@ src/.vscode
 src/modules/__pycache__
 read_file.ini
 mqttBrokerInfo.py
+simulation/__pycache__
+simulation/.vscode
