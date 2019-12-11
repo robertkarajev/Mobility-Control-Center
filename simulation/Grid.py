@@ -7,24 +7,18 @@ red = (255, 0, 0)
 green = (0,255,0)
 class Grid(tp):
     
-    def __init__(self, display, name, colour, coordinates, size):
-        super().__init__(display, name, colour, coordinates, size)
+    def __init__(self, display, name, colour, coordinates):
+        super().__init__(display, name, colour, coordinates)
         self.grid_content = []
         self.coordinates = coordinates
 
     def draw_grid(self):
         for i in range( 41, 100 , 40):
-            # self.grid_content.append(i)
-            
-            print(i)
             for j in range( 41, 400 , 40):   
                 self.grid_content.append((i,j))
                 pg.draw.rect(self.display, white, [i, j, 38, 38], 0)
     
                 #pg.draw.rect(self.display, red, [81, 81, 38, 38], 0)
-
-    def reign_of_interest(self):
-        self.grid_content 
 
     def grid_interaction(self):
         mouse_coords_x, mouse_coords_y = pg.mouse.get_pos()
@@ -32,7 +26,7 @@ class Grid(tp):
         left, top, width, height = self.coordinates
         #print(mouse_coords_x,mouse_coords_y)
 
-        if left_click:
+        if left_click:              # Will be replaced with another function
             x = ((math.floor(mouse_coords_x/40))*40)+1
             
             y = ((math.floor(mouse_coords_y/40))*40)+1

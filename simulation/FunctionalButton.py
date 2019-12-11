@@ -2,8 +2,8 @@ import pygame as pg
 from template_objects import TemplateObjects as tp
 
 class FunctionalButton(tp):
-	def __init__(self, display, name, colour, coordinates, size):
-		super().__init__(display, name, colour, coordinates, size)
+	def __init__(self, display, name, colour, coordinates):
+		super().__init__(display, name, colour, coordinates)
 			
 	# def __init__(self, display, name = "default", colour = "gray", x_coords = 150, y_coords = 450, width = 100, height = 50):		
 		
