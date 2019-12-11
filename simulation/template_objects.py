@@ -10,8 +10,10 @@ class TemplateObjects:
 		self.size = size
 
 		self.select_colour(colour)
-		self.object_interaction()
-		self.insert_name_on_object()
+		self.create_object()
+		self.coordinates_border()
+		# self.object_interaction()
+		# self.insert_name_on_object()
 
 	def create_object(self):
 		pg.draw.rect(self.display, self.colour, (self.coordinates, self.size))
@@ -37,7 +39,6 @@ class TemplateObjects:
 			self.create_object()            #reset to default
 
 	def color_change_on_interaction(self):
-
 		r, g, b = self.colour
 		pg.draw.rect(self.display, (self.change_hsl(r),self.change_hsl(g),self.change_hsl(b)), self.coordinates)
 
@@ -62,3 +63,36 @@ class TemplateObjects:
 	def attach_text_on_objects(self, text, font):
 		textSurface = font.render(text, True, cp["BLACK"].value)
 		return textSurface, textSurface.get_rect()
+
+	def coordinates_border(self):
+		left, top = self.coordinates
+		width, height = self.size
+		width_left_border = width * 0.1
+		width_right_border = width * 0.8
+		height_upper_border = height * 0.1
+		height_lower_border = height * 0.9
+		border_correction = 0.5
+
+		north_border_corner = ((left+width_left_border),(top+(height_upper_border*border_correction)))
+		west_border_corner = ((left+(width_left_border*border_correction),top+(height_upper_border*border_correction)))
+		south_border_corner = ((left+ (width_left_border*border_correction)),(top+(height_lower_border-height_upper_border)+(height_upper_border*border_correction)))
+		east_border_corner = ((left+width- (width_left_border*1.5)),top+(width_left_border*border_correction))
+
+		north_rectangle = (width_right_border,height_upper_border)
+		west_rectangle = (width_left_border,height_lower_border)
+		south_rectangle = (width_right_border+width_left_border,height_upper_border)
+		east_rectangle = (width_left_border,height_lower_border)
+
+		north_borderline =  (north_border_corner, north_rectangle)
+		west_borderline = (west_border_corner, west_rectangle)
+		south_borderline = (south_border_corner, south_rectangle)
+		east_borderline = (east_border_corner, east_rectangle)
+
+		self.draw_borderline(north_borderline,west_borderline,south_borderline, east_borderline)
+
+	def draw_borderline(self, north, west, south, east):
+		pg.draw.rect(self.display, cp["BLACK"].value, north)
+		pg.draw.rect(self.display, cp["BLACK"].value, west)
+		pg.draw.rect(self.display, cp["BLACK"].value, south)
+		pg.draw.rect(self.display, cp["BLACK"].value, east)
+		
