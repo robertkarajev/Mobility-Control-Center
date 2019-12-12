@@ -13,7 +13,7 @@ black = (0,0,0)
 red = (255, 0, 0)
 green = (0,255,0)
 
-display.fill(white)
+display.fill(black)
 pg.display.flip()
 
 new_tp = tp(display,"test","red",(500,500),(150,150))

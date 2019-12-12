@@ -67,21 +67,21 @@ class TemplateObjects:
 	def coordinates_border(self):
 		left, top = self.coordinates
 		width, height = self.size
-		width_left_border = width * 0.1
-		width_right_border = width * 0.8
-		height_upper_border = height * 0.1
-		height_lower_border = height * 0.9
+		tiny_width = width * 0.1
+		large_width = width * 0.8
+		tiny_height = height * 0.1
+		large_height = height * 0.9
 		border_correction = 0.5
 
-		north_border_corner = ((left+width_left_border),(top+(height_upper_border*border_correction)))
-		west_border_corner = ((left+(width_left_border*border_correction),top+(height_upper_border*border_correction)))
-		south_border_corner = ((left+ (width_left_border*border_correction)),(top+(height_lower_border-height_upper_border)+(height_upper_border*border_correction)))
-		east_border_corner = ((left+width- (width_left_border*1.5)),top+(width_left_border*border_correction))
+		north_border_corner = ((left+tiny_width),(top+(tiny_height*border_correction)))
+		west_border_corner = ((left+(tiny_width*border_correction),top+(tiny_height*border_correction)))
+		south_border_corner = ((left+ (tiny_width*border_correction)),(top+(large_height-tiny_height)+(tiny_height*border_correction)))
+		east_border_corner = ((left+width- (tiny_width*1.5)),top+(tiny_width*border_correction))
 
-		north_rectangle = (width_right_border,height_upper_border)
-		west_rectangle = (width_left_border,height_lower_border)
-		south_rectangle = (width_right_border+width_left_border,height_upper_border)
-		east_rectangle = (width_left_border,height_lower_border)
+		north_rectangle = (large_width,tiny_height)
+		west_rectangle = (tiny_width,large_height)
+		south_rectangle = (large_width+tiny_width,tiny_height)
+		east_rectangle = (tiny_width,large_height)
 
 		north_borderline =  (north_border_corner, north_rectangle)
 		west_borderline = (west_border_corner, west_rectangle)
@@ -92,7 +92,7 @@ class TemplateObjects:
 
 	def draw_borderline(self, north, west, south, east):
 		pg.draw.rect(self.display, cp["BLACK"].value, north)
-		pg.draw.rect(self.display, cp["BLACK"].value, west)
-		pg.draw.rect(self.display, cp["BLACK"].value, south)
+		# pg.draw.rect(self.display, cp["BLACK"].value, west)
+		# pg.draw.rect(self.display, cp["BLACK"].value, south)
 		pg.draw.rect(self.display, cp["BLACK"].value, east)
 		
