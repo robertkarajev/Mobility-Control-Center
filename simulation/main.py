@@ -13,10 +13,16 @@ black = (0,0,0)
 red = (255, 0, 0)
 green = (0,255,0)
 
-display.fill(black)
+display.fill(white)
 pg.display.flip()
 
-new_tp = tp(display,"test","red",(500,500),(150,150))
+
+def create_grid():
+	for i in range( 41, 400 , 40):
+            for j in range( 41, 400 , 40):  
+                tp(display,(str(i),str(j)) , "red", (i, j), (38, 38))
+
+# new_tp = tp(display,"test","red",(500,500),(150,150))
 
 while True:
 	
@@ -26,6 +32,6 @@ while True:
 			sys.exit()
 	# new_grid.grid_interaction()
 	
-	
+	create_grid()
 
 	pg.display.update()

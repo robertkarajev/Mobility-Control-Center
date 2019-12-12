@@ -31,7 +31,6 @@ class TemplateObjects:
 			self.color_change_on_interaction()
 			if left_click:
 				try:
-					self.attach_event_listener()
 					print("hello")
 				except:
 					SystemError
@@ -47,12 +46,6 @@ class TemplateObjects:
 		if given_colour >= 10:
 			given_colour = given_colour * multiplier
 			return given_colour
-
-	def attach_event_listener(self, execute_function = ""):
-		try: 
-			execute_function
-		except:
-			print("Warning -- no function attached")
 
 	def insert_name_on_object(self):
 		font_style = pg.font.Font("freesansbold.ttf", 12)
@@ -70,13 +63,14 @@ class TemplateObjects:
 		tiny_width = width * 0.1
 		large_width = width * 0.8
 		tiny_height = height * 0.1
-		large_height = height * 0.9
+		large_height = height * 0.8
 		border_correction = 0.5
 
 		north_border_corner = ((left+tiny_width),(top+(tiny_height*border_correction)))
-		west_border_corner = ((left+(tiny_width*border_correction),top+(tiny_height*border_correction)))
-		south_border_corner = ((left+ (tiny_width*border_correction)),(top+(large_height-tiny_height)+(tiny_height*border_correction)))
-		east_border_corner = ((left+width- (tiny_width*1.5)),top+(tiny_width*border_correction))
+		# west_border_corner = ((left+(tiny_width*border_correction),top+(tiny_height*border_correction)))
+		west_border_corner = ((left+tiny_width)-(tiny_width*border_correction),(top+(tiny_height*border_correction)))
+		south_border_corner = (left+tiny_width-(tiny_width*border_correction), ((top+height)-(tiny_height)))
+		east_border_corner = (left+large_width+(tiny_width*border_correction), top+(tiny_height*border_correction))
 
 		north_rectangle = (large_width,tiny_height)
 		west_rectangle = (tiny_width,large_height)
@@ -92,7 +86,7 @@ class TemplateObjects:
 
 	def draw_borderline(self, north, west, south, east):
 		pg.draw.rect(self.display, cp["BLACK"].value, north)
-		# pg.draw.rect(self.display, cp["BLACK"].value, west)
-		# pg.draw.rect(self.display, cp["BLACK"].value, south)
+		pg.draw.rect(self.display, cp["BLACK"].value, west)
+		pg.draw.rect(self.display, cp["BLACK"].value, south)
 		pg.draw.rect(self.display, cp["BLACK"].value, east)
 		
