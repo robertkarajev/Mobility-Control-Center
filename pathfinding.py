@@ -172,7 +172,7 @@ class PathFinder:
                 distanceTillTurn += self.distanceBetweenTags
             else:
                 specificDirections.append(str(distanceTillTurn) + direction)
-                distanceBetweenTags = self.distanceBetweenTags
+                distanceTillTurn = self.distanceBetweenTags
         if not specificDirections:
             specificDirections.append(str(distanceTillTurn) + directions[:-1])
         specificDirections.append('arrived')
@@ -186,7 +186,7 @@ class PathFinder:
 
         generatedPath = self.generateAStarPath(grid, beginCoordinates, endCoordinates)
         pathModifiedWithDirections = self.assignDirectionsToPath(generatedPath, prevCoordinates)
-        return pathModifiedWithDirections
+        return [generatedPath, pathModifiedWithDirections]
 
     def printGrid(self, grid):
         for i in grid:
