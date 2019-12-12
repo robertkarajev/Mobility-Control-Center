@@ -13,19 +13,43 @@ class Node:
         return self.position == other.position
 
 
-class Pathfinding:
-    def __init__(self, roadsAndSpaces, roads):
+class PathFinder:
+    def __init__(self, spaces, roads):
         self.distanceBetweenTags = 100  # in centimeters
         self.grid = []
-        self.generateGrid(roadsAndSpaces, roads)
+        self.generateGrid(spaces, roads)
 
-    def astar(self, maze, start, end):
+    def generateGrid(self, spaces, roads):
+        # find out max values for grid (making use of spaces + roads)
+        biggestY = 0
+        biggestX = 0
+        for tag, (y, x) in spaces + roads:
+            if y > biggestY:
+                biggestY = y
+            if x > biggestX:
+                biggestX = x
+        # generate fresh grid
+        self.grid = []
+        for y in range(biggestY + 1):
+            self.grid.append([])
+            for x in range(biggestX + 1):
+                self.grid[y].append(1)
+        # add roads to existing grid
+        for _, (y, x) in roads:
+            self.grid[y][x] = 0
+
+    def setDestitinationInGrid(self, grid, *coordinates):
+        for (y, x) in coordinates:
+            grid[y][x] = 0
+        return grid
+
+    def generateAStarPath(self, grid, beginCoordinates, endCoordinates):
         """Returns a list of tuples as a path from the given start to the given end in the given maze"""
 
         # Create start and end node
-        start_node = Node(None, start)
+        start_node = Node(None, beginCoordinates)
         start_node.g = start_node.h = start_node.f = 0
-        end_node = Node(None, end)
+        end_node = Node(None, endCoordinates)
         end_node.g = end_node.h = end_node.f = 0
 
         # Initialize both open and closed list
@@ -69,12 +93,12 @@ class Pathfinding:
                     current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
                 # Make sure within range
-                if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (
-                        len(maze[len(maze) - 1]) - 1) or node_position[1] < 0:
+                if node_position[0] > (len(grid) - 1) or node_position[0] < 0 or node_position[1] > (
+                        len(grid[len(grid) - 1]) - 1) or node_position[1] < 0:
                     continue
 
                 # Make sure walkable terrain
-                if maze[node_position[0]][node_position[1]] > 0:
+                if grid[node_position[0]][node_position[1]] > 0:
                     continue
                 """
                 knal hier parking idtjes erin
@@ -112,33 +136,7 @@ class Pathfinding:
                 # Add the child to the open list
                 open_list.append(child)
 
-    def printGrid(self, grid):
-        for i in grid:
-            print(i)
-
-    def getGridDimensions(self, roadsAndSpaces):
-        biggestY = 0
-        biggestX = 0
-        for tag, (y, x) in roadsAndSpaces:
-            if y > biggestY:
-                biggestY = y
-            if x > biggestX:
-                biggestX = x
-        return [biggestY, biggestX]
-
-    def generateGrid(self, roadsAndSpaces, roads):
-        dimensions = self.getGridDimensions(roadsAndSpaces)
-        self.grid = []
-        for i in range(dimensions[0] + 1):
-            self.grid.append([])
-            for j in range(dimensions[1] + 1):
-                self.grid[i].append(1)
-
-        for i, (y, x) in roads:
-            # noinspection PyTypeChecker
-            self.grid[y][x] = 0
-
-    def getDirectionsBeta(self, path, prevCor=None):
+    def assignDirectionsToPath(self, path, prevCor=None):
         if prevCor is None:
             prevCor = []
         direction = ''
@@ -175,66 +173,44 @@ class Pathfinding:
             else:
                 specificDirections.append(str(distanceTillTurn) + direction)
                 distanceBetweenTags = self.distanceBetweenTags
+        if not specificDirections:
+            specificDirections.append(str(distanceTillTurn) + directions[:-1])
         specificDirections.append('arrived')
         return specificDirections
 
-    def getDirections(self, path, prevCor=None):
-        if prevCor is None:
-            prevCor = []
-        direction = ''
-        pathWithDirections = []
-        for index, (y, x) in enumerate(path):
-            if prevCor and index + 1 < len(path):
-                if x == path[index + 1][1]:
-                    if x == prevCor[1]:
-                        direction = 'V'
-                    elif x < prevCor[1]:
-                        direction = 'R'
-                    else:
-                        direction = 'L'
-                elif y == path[index + 1][0]:
-                    if y == prevCor[0]:
-                        direction = 'V'
-                    elif y < prevCor[0]:
-                        direction = 'R'
-                    else:
-                        direction = 'L'
-            else:
-                direction = 'V'
-            pathWithDirections.append([(y, x), direction])
-
-            prevCor = (y, x)
-        return pathWithDirections
-
-    def setCoordinateZero(self, grid, *coordinates):
-        for (y, x) in coordinates:
-            grid[y][x] = 0
-        return grid
-
-    def getPath(self, startCoordinates, endCoordinates, prevCoordinates):
-        grid = self.setCoordinateZero(self.grid, startCoordinates, endCoordinates)
+    def getPath(self, beginCoordinates, endCoordinates, prevCoordinates):
+        grid = self.setDestitinationInGrid(self.grid, beginCoordinates, endCoordinates)
+        print('Currently used grid:')
         self.printGrid(grid)
-        path = self.astar(grid, startCoordinates, endCoordinates)
-        return [path, self.getDirectionsBeta(path, prevCoordinates)]
-        # return self.getDirections(path, prevCoordinates)
+        print()
+
+        generatedPath = self.generateAStarPath(grid, beginCoordinates, endCoordinates)
+        pathModifiedWithDirections = self.assignDirectionsToPath(generatedPath, prevCoordinates)
+        return pathModifiedWithDirections
+
+    def printGrid(self, grid):
+        for i in grid:
+            print(i)
 
 
 def main():
     start = (5, 1)
-    end = (2, 5)
-    roads = [('tag01', (5, 1)), ('tag02', (4, 1)), ('tag03', (3, 1)), ('tag04', (2, 1)), ('tag05', (1, 1)),
-             ('tag06', (1, 2)), ('tag07', (1, 3)), ('tag08', (1, 4)), ('tag09', (0, 4)), ('tag10', (2, 4)),
-             ('tag11', (3, 4)), ('tag12', (4, 4)), ('tag13', (4, 3)), ('tag14', (4, 2))]
+    finish = (2, 5)
 
     parkingSpaces = [('tag15', (4, 0)), ('tag16', (3, 0)), ('tag17', (2, 0)), ('tag18', (1, 0)), ('tag19', (0, 1)),
                      ('tag20', (0, 2)), ('tag21', (0, 3)), ('tag22', (1, 5)), ('tag23', (2, 5)), ('tag24', (3, 5)),
                      ('tag25', (4, 5)), ('tag26', (5, 4)), ('tag27', (5, 3)), ('tag28', (5, 2)), ('tag29', (2, 2)),
                      ('tag30', (2, 3)), ('tag31', (3, 2)), ('tag32', (3, 3))]
 
-    roadsAndSpaces = roads + parkingSpaces
+    parkingRoads = [('tag01', (5, 1)), ('tag02', (4, 1)), ('tag03', (3, 1)), ('tag04', (2, 1)), ('tag05', (1, 1)),
+                    ('tag06', (1, 2)),
+                    ('tag07', (1, 3)), ('tag08', (1, 4)), ('tag09', (0, 4)), ('tag10', (2, 4)), ('tag11', (3, 4)),
+                    ('tag12', (4, 4)),
+                    ('tag13', (4, 3)), ('tag14', (4, 2))]
 
-    pathfinding = Pathfinding(roadsAndSpaces, roads)
-    print(pathfinding.getPath(start, end, ''))
+    pathFinder = PathFinder(parkingSpaces, parkingRoads)
+    path = pathFinder.getPath(start, finish, '')
+    print('Path:', path)
 
 
 if __name__ == '__main__':
