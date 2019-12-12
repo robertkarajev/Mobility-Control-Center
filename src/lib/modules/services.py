@@ -5,26 +5,29 @@ import threading
 import json
 # import RPi.GPIO as GPIO
 
-topSql = 'MySqlConnector'
+topDatabase = 'SQLDatabase'
+topMqtt = 'MQTTServerClient'
 
 class MqttServerClient:
-    def __init__(self, user, password, port, brokerAddress = '127.0.0.1'):
-        self.user = user                                 # Connection username
-        self.password = password   # Connection password
-        self.brokerAddress = brokerAddress            # Broker address
-        self.port = port                                     # Broker port
-        
-        self.returnMsg = threading.Event()
-        self.msg = ''
-        self.topic = ''
+    def __init__(self, user, password, port, brokerAddress='127.0.0.1', logger=None):
+        self.user = user                    # Connection username
+        self.password = password            # Connection password
+        self.brokerAddress = brokerAddress  # Broker address
+        self.port = port                    # Broker port
 
-        print(self.user, self.password, self.brokerAddress, self.port)
+        self.logger = logger
+        logger.debug('connection arguments', self.user, self.password, self.brokerAddress, self.port, topic=topMqtt)
+
+        self.event = threading.Event()
+        self.msgArr = []
+        self.client = None
 
     def createClient(self):
-        self.client = paho.Client("Server")                   # create new instance
+        self.client = paho.Client("ServerClient")                   # create new instance
         self.client.username_pw_set(self.user, password=self.password)  # set username and password
         self.client.on_connect = self.on_connect              # attach function to callback
         self.client.on_message = self.setMsg                  # attach function to callback
+        self.logger.info('client created.', topic=topMqtt)
 
     def startConnection(self):
         try:
@@ -32,82 +35,88 @@ class MqttServerClient:
 
             # create new thread to process network traffic
             self.client.loop_start()
+            self.logger.info('connection established.', topic=topMqtt)
         except:
-            print('[INFO] Connection failed...')
+            self.logger.warning('connection failed, retrying...', topic=topMqtt)
 
     def stopConnection(self):
         self.client.disconnect()
         self.client.loop_stop()
+        self.logger.info('connection closed.', topic=topMqtt)
 
     def on_connect(self, client, userdata, flags, connectionResult):
-        errorMessage = '[ERROR] Connection refused'
+        errorMessage = 'connection refused'
         if connectionResult == 0:
-            print('[INFO] Connection to broker successful')
             self.client.subscribe('GP', 1)  # Get Path
             self.client.subscribe('LT', 1)  # arrived at Last Tag
             self.client.subscribe('AU', 1)  # AUthorize
             self.client.subscribe('RT', 1)  # Read Tag
         elif connectionResult == 1:
-            print(errorMessage, '- incorrect protocol version')
+            self.logger.error(errorMessage, 'incorrect protocol version', topic=topMqtt)
         elif connectionResult == 2:
-            print(errorMessage, '- invalid client identifier')
+            self.logger.error(errorMessage, 'invalid client identifier', topic=topMqtt)
         elif connectionResult == 3:
-            print(errorMessage, '- server unavailable')
+            self.logger.error(errorMessage, 'server unavailable', topic=topMqtt)
         elif connectionResult == 4:
-            print(errorMessage, '- bad username or password')
+            self.logger.error(errorMessage, 'bad username or password', topic=topMqtt)
         elif connectionResult == 5:
-            print(errorMessage, '- not authorised')
+            self.logger.error(errorMessage, 'not authorised', topic=topMqtt)
 
     def sendPublish(self, topic, message, qos):
+        self.logger.info('sent message:', '(topic: '+topic+', message: '+str(message)+', qos: '+str(qos)+')', topic=topMqtt)
         self.client.publish(topic, json.dumps(message), qos)
 
     def setMsg(self, client, userdata, msg):
-        self.topic = msg.topic
-        self.msg = json.loads(str(msg.payload.decode('utf-8')))
-        self.returnMsg.set()
+        topic = msg.topic
+        msg = json.loads(str(msg.payload.decode('utf-8')))
+        self.msgArr.append([topic, msg])
+        self.event.set()
 
     def getMsg(self):
-        self.returnMsg.wait()
-        self.returnMsg.clear()
-        return [self.topic, self.msg]
-
+        self.event.wait()
+        msg = self.msgArr.pop(0)
+        if not len(self.msgArr) > 0:
+            self.event.clear()
+        self.logger.info('received message from car:', msg, topic=topMqtt)
+        return msg
 
 class MySqlConnector:
-    def __init__(self, username, password, databaseName, databaseHost, databasePort, logger = None):
+    def __init__(self, username, password, databaseName, databaseAddress, databasePort, logger = None):
         self.username = username
         self.password = password
         self.databaseName = databaseName
-        self.databaseHost = databaseHost
+        self.databaseAddress = databaseAddress
         self.databasePort = databasePort
+        
         self.logger = logger
-        self.logger.debug('connection arguments:', self.username, self.password, self.databaseHost, self.databasePort, topic = topSql)
+        self.logger.debug('connection arguments:', self.username, self.password, self.databaseAddress, self.databasePort, topic = topDatabase)
 
     def startConnection(self):
         self.connection = mysqlconn.MySQLConnection(username = self.username,
                                          password = self.password,
                                          database = self.databaseName,
-                                         host = self.databaseHost,
+                                         host = self.databaseAddress,
                                          port = self.databasePort)
-        self.logger.info('connection established.', topic = topSql)
+        self.logger.info('connection established.', topic = topDatabase)
 
     def closeConnection(self):
         self.connection.close()
-        self.logger.info('connection closed.', topic = topSql)
+        self.logger.info('connection closed.', topic = topDatabase)
 
     def executeQuery(self, query, values = None):
-        self.logger.debug('executing query:', query, 'values:', values, topic = topSql)
+        self.logger.debug('executing query:', query, 'values:', values, topic = topDatabase)
         cursor = self.connection.cursor()
         if 'SELECT' in query.upper():
             cursor.execute(query, values)
             result = cursor.fetchall()
             cursor.close()
-            self.logger.debug('end result:', result, topic = topSql)
+            self.logger.debug('end result:', result, topic = topDatabase)
             return result
         else:
             cursor.execute(query, values)
             self.connection.commit()
             cursor.close()
-            self.logger.debug('end result:', True, topic = topSql)
+            self.logger.debug('end result:', True, topic = topDatabase)
             return True
 
     def checkCarId(self, carId):
@@ -119,14 +128,11 @@ class MySqlConnector:
         query = "INSERT INTO cars VALUES ('"+carId+"', 'arriving')"
         self.executeQuery(query)
         return True
-        
 
     def deleteCar(self, carId):
         query = "DELETE FROM cars WHERE id_car = '"+carId+"'"
         self.executeQuery(query)
 
-    #if lwaving or parked: return path to exitF
-    #else assign parking space and return path to said parking space
     def getCarState(self, carId):
         query = "SELECT state FROM cars WHERE id_car = '"+carId+"'"
         result = self.executeQuery(query)
@@ -164,6 +170,17 @@ class MySqlConnector:
         result = self.executeQuery(query)
         return result
 
+    def getParkingRoads(self):
+        query = "SELECT rfid_tag, coordinates FROM parking_roads"
+        result = self.executeQuery(query)
+        return result
+
+    def getParkingSpaces(self):
+        query = "SELECT rfid_tag, coordinates FROM parking_spaces"
+        result = self.executeQuery(query)
+        return result
+
+'''
     def insertLot(self, id_parking_lot, is_space_available, available_spaces):
         query = ("INSERT INTO parking_lots "
                    "(id_parking_lot, is_space_available, available_spaces) "
@@ -191,6 +208,7 @@ class MySqlConnector:
                    "VALUES (%s, %s, %s, %s)")
         values = (id_unit, rfid_tag, location, id_parking_lot)
         self.executeQuery(query, values)
+'''
 
 #!/usr/bin/env python
 #green/data0 is pin 11
