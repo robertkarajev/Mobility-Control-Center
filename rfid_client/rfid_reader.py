@@ -2,6 +2,7 @@
 #white/data1 is pin 13
 #For Example Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
 import time as tm
+import sys
 import RPi.GPIO as GPIO
 
 class Wiegand:
@@ -10,6 +11,9 @@ class Wiegand:
 		self.data0 = data0					# pin for Data 0 
 		self.data1 = data1					# pin for Data 1 
 		self.bits = bits
+		
+		self.previous_id = ""
+		
 		self.setup()
 	
 	def setup (self):
@@ -44,17 +48,31 @@ class Wiegand:
 			index += 1
 		
 		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
-			bin = binary_string[1:-1] 					# Leaving out the first and last bit
+			bin = binary_string[1:-1] # Leaving out the first and last bit
+			
 			if len(bin) == 32:
-				hex_string = str(hex(int(bin,2)))		# Convert incoming bits to string
-				hex_compressed = hex_string[2:10] 		# Removing 0x from each incoming card
-				self.bits = '' 							# Resets bits to blank
+				hex_string = str(hex(int(bin,2)))
+				hex_compressed = hex_string[2:10] # Removing 0x from each incoming card
+				
+				print('hex: ' , hex(int(bin,2)))  
+				
+				self.bits = ''
 				return hex_compressed
-	#
+	
+	def get_previous_id(self, id):
+		
+		if id:	
+			print("here", id)
+			if self.previous_id != id:
+				return_old_id = self.previous_id
+				self.previous_id = id
+				return return_old_id	
+
 	def run(self):
-		data = self.retrieve_id(self.bits)
-		tm.sleep(0.01) 					# This is needed to halt the thread from the wiegand protocol
-		return data	
+		new_id = self.retrieve_id(self.bits)
+		previous_id = self.get_previous_id(new_id)
+		tm.sleep(0.01)
+		return new_id, previous_id	
 
 class ParkingVerifier:
 	def __init__ (self, retrieved_path):
@@ -68,3 +86,17 @@ class ParkingVerifier:
 	
 	def change_path (self, path):
 		self.retrieved_path = path
+		
+'''
+print ("Read card")
+wg = Wiegand ()
+while True:
+	try:
+		data, old_data = wg.run()
+		if data:
+			print("New: ",data, " Old: ", old_data)
+	except KeyboardInterrupt:
+		GPIO.cleanup ()
+		print ("Clean exit by user")
+		sys.exit()
+'''

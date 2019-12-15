@@ -1,66 +1,43 @@
-import paho.mqtt.client as mqttClient
-import random
-import string
+from client import MQTTClient as mc
 import json
+<<<<<<< HEAD
 import main
 import configpaser as cp
 
 read_file = cp.ConfigParser()
 read_file.read('read_file.ini')
 ip = read_file['serverinformation']['IP']
+=======
+import time
+>>>>>>> development
 
-idLength = 4
 
-class MQTTClient:
-    # create a random string containing letters and numbers with a variable length
-    def randomString(self, stringLength):
-        letters = string.ascii_letters + '0123456789'
-        return ''.join(random.choice(letters) for i in range(stringLength))
-
-    # callback function for when the script get a CONNACK from the broker
-    # subscribes to own name so it can receive personal messages from the server-client
-    def on_connect(self, client, userdata, flags, rc):
-        client.subscribe(self.name, 1)
-        if rc == 0:
-            print("Connected to broker")
-            global Connected                # Use global variable
-            Connected = True                # Signal connection
-        else:
-            print("Connection failed")
-
-    # callback function for when a message is received from the broker
+class MQTTClient(mc):
     def on_message(self, client, userdata, message):
         if message.topic == self.name:
             msg = json.loads(str(message.payload.decode('utf-8')))
             if not self.authorized:
-                if msg:  # msg == True
-                    self.authorized = True
-                    print('ID authorized by server')
-                else:
-                    print('ID not authorized by server')
-                    self.client.unsubscribe(self.name)
-                    self.name = self.randomString(idLength)
-                    self.client.subscribe(self.name, 1)
-                    self.getAuth()
+                self.authLogic(msg)
             else:
                 self.msg = msg
         else:
             print('message that was not intended for you has been received')
 
-    # general sending method
-    def sendPublish(self, topic, message, qos):
-        self.client.publish(topic, json.dumps(message), qos)
-
-    def getAuth(self):
-        self.sendPublish('AU', self.name, 1)
-
-    # send a tag to the server which it will put in the database if it isn't there yet
     def sendTag(self, tagId, msg):
         self.msg = msg
-        self.sendPublish('RT', self.name + ',' + str(tagId), 1)  # RT
+        self.sendPublish('RT', self.name + ',' + str(tagId), 1)  # ReadTag
+        start = time.time()
+        counter = 0
         while self.msg == 'get':
-            pass
+            if time.time() - start > self.retrySendingAfterSeconds:
+                if counter >= self.maxAmountRetriesSending:
+                    return 'took too long try sending new tag'
+                print('retry sending ReadTag')
+                self.sendPublish('RT', self.name + ',' + str(tagId), 1)  # ReadTag
+                counter += 1
+                start = time.time()
         return self.msg
+<<<<<<< HEAD
 
     def __init__(self, broker_address, localTesting, password='', broker_port=1883):
         self.name = self.randomString(idLength)
@@ -97,3 +74,5 @@ while True:
     print('Enter new RFID tag: ')
     tagRead = str(input())
     print(mqttclient.sendTag(tagRead, 'get'))
+=======
+>>>>>>> development
