@@ -4,3 +4,6 @@ read_file.ini
 mqttBrokerInfo.py
 simulation/__pycache__
 simulation/.vscode
+__pycache__
+\src\modules\__pycache__
+mqttBrokerInfo.py

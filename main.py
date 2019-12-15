@@ -3,14 +3,21 @@ import rfid_reader as wg
 import configparser as cp
 import mqttBrokerinfo as mbi
 
-#read_file = cp.ConfigParser()
-#read_file.read('read_file.ini')
-#user = read_file['broker']['user']
-#pw = read_file['broker']['PW']
-#ip = read_file['broker']['brokerAddress']
-#port = int(read_file['broker']['port'])
-#read_file = cp.ConfigParser()
-#read_file.read('read_file.ini')
+class Main:
+	
+	def __init__(self, path = ''):
+		self.mqtt = MQTTClient("145.24.222.194", False) #boolean is localhost // ip local host, host port 1883 
+		self.verifier = wg.ParkingVerifier([])
+		print('hello there')
+	
+	def run(self):
+		while True:
+			receive_tag_id, previous_tag = wg.Wiegand.run()
+			#receive_tag_id = str(input())
+			if not self.verifier.verify_path(receive_tag_id):
+				path = self.mqtt.getPath(receive_tag_id,'get') # Returns a list
+				self.verifier.change_path(path)
+				self.verifier.verify_path(receive_tag_id)
 
 # Leaving it blank will use local host, host port 1883 
 mqtt = MQTTClient(mbi[0], mbi[1], mbi[2], mbi[3]) # host adress, port, brokername,brokerpass

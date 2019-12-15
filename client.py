@@ -1,57 +1,92 @@
-import paho.mqtt.client as mqttClient
+import paho.mqtt.client as paho
 import random
 import string
 import json
-import mqttBrokerInfo
-import time as tm
+import time
+
+topFile = 'file interaction'
+topCon = 'connection'
+topMsg = 'message'
 
 
 class MQTTClient:
-    # create a random string containing letters and numbers with a variable length
-	# Localhost is for testing purposes
-    def __init__(self, brokerAddress = "127.0.0.1" , brokerPort, brokerUser, brokerPassword):
+    def __init__(self, user, password, port, brokerAddress='127.0.0.1', logger=None):
+        self.logger = logger
+        # variables that can be changed
         self.retrySendingAfterSeconds = 5
         self.maxAmountRetriesSending = 5
         self.carIdLength = 4
-        self.authorized = False
 
-        self.name = self.randomString(self.carIdLength)
-
+        # variables that should not be changed
         self.brokerAddress = brokerAddress   # Broker address
-        self.port = brokerPort               # Broker port
-        self.user = brokerUser               # Connection username
-        self.password = brokerPassword       # Connection password
+        self.port = port               # Broker port
+        self.user = user               # Connection username
+        self.password = password       # Connection password
 
-        self.client = mqttClient.Client(self.name)                      # create new instance
-        self.client.username_pw_set(self.user, password=self.password)  # set username and password
-        self.client.on_connect = self.on_connect                        # attach function to callback
-        self.client.on_message = self.on_message                        # attach function to callback
+        # init here to prevent warnings
+        self.authorized = None
+        self.client = None
+        self.name = None
+
         self.msg = 'get'
-		self.start_connection()
-        
-	def start_connection(self):
-        print('broker address: ' + self.brokerAddress, ' port: ', self.port)
-		try:
-            self.client.connect(self.brokerAddress, port=self.port)  # connect to broker
-        except:
-            print('could not connect, continue trying')
 
-        self.client.loop_start()  # start the loop
-        self.getAuth()
-	
-	def randomString(self, stringLength):
-        letters = string.ascii_letters + '0123456789'
-        return ''.join(random.choice(letters) for i in range(stringLength))
+        logger.info('broker address:', self.brokerAddress, 'port:', self.port, topic=topCon)
+
+    def createClient(self):
+        self.getNameFile()
+        if self.name:
+            self.authorized = True
+        else:
+            self.authorized = False
+            self.name = self.generateName(self.carIdLength)
+        self.client = paho.Client(self.name + self.generateName(self.carIdLength))  # create new instance
+        self.client.username_pw_set(self.user, password=self.password)  # set username and password
+        self.client.on_connect = self.on_connect  # attach function to callback
+        self.client.on_message = self.on_message  # attach function to callback
+        if self.authorized:
+            self.logger.info('id was authorized before already', topic=topCon)
+            self.getAuth()
+        else:
+            self.logger.info('requested authorization', topic=topCon)
+            self.getAuth()
+
+    def startConnection(self):
+        try:
+            self.client.connect(self.brokerAddress, port=self.port)  # connect to broker
+            self.client.loop_start()  # start the loop
+        except:
+            self.logger.error('could not connect, continue trying', topic=topCon)
+
+    def stopConnection(self):
+        self.client.disconnect()
+        self.client.loop_stop()
 
     # callback function for when the script get a CONNACK from the broker
     # subscribes to own name so it can receive personal messages from the server-client
     def on_connect(self, client, userdata, flags, rc):
         client.subscribe(self.name, 1)
         if rc == 0:
-            print("Connected to broker")
+            self.logger.info("Connected to broker", topic=topCon)
         else:
-            print("Connection failed")
+            self.logger.error("Connection failed", topic=topCon)
 
+    def setNameFile(self):
+        f = open("carName.txt", "w+")
+        f.write(self.name)
+        f.close()
+        self.logger.debug('name set', topic=topFile)
+
+    def getNameFile(self):
+        f = open("carName.txt", "r+")
+        self.name = f.read()
+        self.logger.debug('name get', topic=topFile)
+
+    def clearNameFile(self):
+        f = open("carName.txt", "w+")
+        f.write('')
+        self.authorized = False
+        f.close()
+        self.logger.debug('name cleared', topic=topFile)
 
     # callback function for when a message is received from the broker
     def on_message(self, client, userdata, message):
@@ -60,22 +95,31 @@ class MQTTClient:
             if not isinstance(msg, list):  # if msg is a path or not
                 if not self.authorized:
                     self.authLogic(msg)
+                elif msg == 'clearName':
+                    self.clearNameFile()
+                    self.authorized = False
+                elif msg == 'parked':
+                    self.logger.info('confirmation for parking received', topic=topMsg)
+                elif str(msg) == 'False':
+                    self.logger.info('id was indeed already in database', topic=topMsg)
+                elif str(msg) == 'True':
+                    self.logger.error('id not in database while it should have been', topic=topMsg)
                 else:
-                    print('[ERROR] message received not a list')
+                    self.logger.error('message received not a list:', msg, topic=topMsg)
             else:
-                print(self.authorized)
                 self.msg = msg
         else:
-            print('message that was not intended for you has been received')
+            self.logger.error('message that was not intended for you has been received:', message, topic=topMsg)
 
     def authLogic(self, msg):
         if msg:  # msg == True
+            self.setNameFile()
             self.authorized = True
-            print('ID authorized by server')
+            self.logger.info('ID authorized by server', topic=topMsg)
         else:
-            print('ID not authorized by server')
+            self.logger.info('ID not authorized by server', topic=topMsg)
             self.client.unsubscribe(self.name)
-            self.name = self.randomString(self.carIdLength)
+            self.name = self.generateName(self.carIdLength)
             self.client.subscribe(self.name, 1)
             self.getAuth()
 
@@ -89,21 +133,26 @@ class MQTTClient:
         self.sendPublish('AU', self.name, 1)
 
     # get a path by sending the name of the car as well as the RFID tag just read(GetPath)
-    def getPath(self, tagId, msg):
-        self.msg = msg
-        self.sendPublish('GP', self.name + ',' + str(tagId), 1)
-        start = tm.time()
+    def getPath(self, tagId, prevTagId=''):
+        self.msg = 'get'
+        self.sendPublish('GP', self.name + ',' + str(tagId) + ',' + str(prevTagId), 1)
+        start = time.time()
         counter = 0
         while self.msg == 'get':
-            if tm.time() - start > self.retrySendingAfterSeconds:
+            if time.time() - start > self.retrySendingAfterSeconds:
                 if counter >= self.maxAmountRetriesSending:
                     return 'took too long try sending new tag'
-                print('retry sending getPath')
-                self.sendPublish('GP', self.name + ',' + str(tagId), 1)
+                self.logger.warning('retry sending getPath')
+                self.sendPublish('GP', self.name + ',' + str(tagId) + ',' + str(prevTagId), 1)
                 counter += 1
-                start = tm.time()
+                start = time.time()
         return self.msg
 
-    # confirm that you have arrived at the destination (ParkArrived)
-    def arrived(self):
-        self.sendPublish('PA', self.name, 1)
+    # confirm that you have arrived at the destination (arrivedAtLastTag)
+    def arrivedAtLastTag(self):
+        self.sendPublish('LT', self.name, 1)
+
+    # create a random string containing letters and numbers with a variable length
+    def generateName(self, stringLength):
+        letters = string.ascii_letters + '0123456789'
+        return ''.join(random.choice(letters) for i in range(stringLength))
