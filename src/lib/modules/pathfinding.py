@@ -15,31 +15,32 @@ class Node:
 
 class PathFinder:
     def __init__(self, spaces, roads):
+        self.distanceBetweenTags = 100  # in centimeters
         self.grid = []
         self.generateGrid(spaces, roads)
-    
+
     def generateGrid(self, spaces, roads):
-        #find out max values for grid (making use of spaces + roads)
+        # find out max values for grid (making use of spaces + roads)
         biggestY = 0
         biggestX = 0
-        for i in spaces+roads:
-            if i[1][0] > biggestY:
-                biggestY = i[1][0]
-            if i[1][1] > biggestX:
-                biggestX = i[1][1]
-        #generate fresh grid
+        for tag, (y, x) in spaces + roads:
+            if y > biggestY:
+                biggestY = y
+            if x > biggestX:
+                biggestX = x
+        # generate fresh grid
         self.grid = []
         for y in range(biggestY + 1):
             self.grid.append([])
             for x in range(biggestX + 1):
                 self.grid[y].append(1)
-        #add roads to existing grid
-        for _,(y,x) in roads:
+        # add roads to existing grid
+        for _, (y, x) in roads:
             self.grid[y][x] = 0
 
     def setDestitinationInGrid(self, grid, *coordinates):
-        for coord in coordinates:
-            grid[coord[0]][coord[1]] = 0
+        for (y, x) in coordinates:
+            grid[y][x] = 0
         return grid
 
     def generateAStarPath(self, grid, beginCoordinates, endCoordinates):
@@ -135,7 +136,9 @@ class PathFinder:
                 # Add the child to the open list
                 open_list.append(child)
 
-    def assignDirectionsToPath(self, path, prevCoordinates=[]):
+    def assignDirectionsToPath(self, path, prevCor=None):
+        if prevCor is None:
+            prevCor = []
         direction = ''
         directions = []
         for i, (y, x) in enumerate(path):
@@ -211,19 +214,15 @@ class PathFinder:
             self.printGrid(grid)
             generatedPath = self.generateAStarPath(grid, beginCoordinates, endCoordinates)
 
-        generatedPath = self.generateAStarPath(generatedGrid, beginCoordinates, endCoordinates)
         pathModifiedWithDirections = self.assignDirectionsToPath(generatedPath, prevCoordinates)
-        return pathModifiedWithDirections
+        return [generatedPath, pathModifiedWithDirections]
 
     def printGrid(self, grid):
+        print('Currently used grid:')
         for i in grid:
             print(i)
+        print()
 
-    def getGrid(self):
-        return self.grid
-    
-    def setGrid(self, grid):
-        self.grid = grid
 
 def main():
     start = (5, 1)
@@ -231,19 +230,21 @@ def main():
     prevTag = ''
     entryPoint = (1, 1)
 
-    parkingSpaces = [('tag15', (4,0)), ('tag16', (3,0)), ('tag17', (2,0)), ('tag18', (1,0)), ('tag19', (0,1)),
-                     ('tag20', (0,2)), ('tag21', (0,3)), ('tag22', (1,5)), ('tag23', (2,5)), ('tag24', (3,5)),
-                     ('tag25', (4,5)), ('tag26', (5,4)), ('tag27', (5,3)), ('tag28', (5,2)), ('tag29', (2,2)),
-                     ('tag30', (2,3)), ('tag31', (3,2)), ('tag32', (3,3))]
+    parkingSpaces = [('tag15', (4, 0)), ('tag16', (3, 0)), ('tag17', (2, 0)), ('tag18', (1, 0)), ('tag19', (0, 1)),
+                     ('tag20', (0, 2)), ('tag21', (0, 3)), ('tag22', (1, 5)), ('tag23', (2, 5)), ('tag24', (3, 5)),
+                     ('tag25', (4, 5)), ('tag26', (5, 4)), ('tag27', (5, 3)), ('tag28', (5, 2)), ('tag29', (2, 2)),
+                     ('tag30', (2, 3)), ('tag31', (3, 2)), ('tag32', (3, 3))]
 
-    parkingRoads = [('tag01', (5,1)), ('tag02', (4,1)), ('tag03', (3,1)), ('tag04', (2,1)), ('tag05', (1,1)), ('tag06', (1,2)),
-             ('tag07', (1,3)), ('tag08', (1,4)), ('tag09', (0,4)), ('tag10', (2,4)), ('tag11', (3,4)), ('tag12', (4,4)),
-             ('tag13', (4,3)), ('tag14', (4,2))]
-
+    parkingRoads = [('tag01', (5, 1)), ('tag02', (4, 1)), ('tag03', (3, 1)), ('tag04', (2, 1)), ('tag05', (1, 1)),
+                    ('tag06', (1, 2)),
+                    ('tag07', (1, 3)), ('tag08', (1, 4)), ('tag09', (0, 4)), ('tag10', (2, 4)), ('tag11', (3, 4)),
+                    ('tag12', (4, 4)),
+                    ('tag13', (4, 3)), ('tag14', (4, 2))]
 
     pathFinder = PathFinder(parkingSpaces, parkingRoads)
-    path = pathFinder.getPath(start, finish, '')
-    print('Path:',path)
+    path = pathFinder.getPath(start, end, prevTag, entryPoint)
+    print('Path:', path)
+
 
 if __name__ == '__main__':
     main()
