@@ -10,8 +10,10 @@ logger = logger.Logger(1)
 # Leaving it blank will use local host, host port 1883
 mbi = mbi.getmqttinfo()
 mqtt = MQTTClient(mbi[0], mbi[1], mbi[2], mbi[3], logger) # host adress, port, brokername,brokerpass
+mqtt.createClient()
+mqtt.startConnection()
 verifier = wg.ParkingVerifier([])
-	
+
 def main():
 	receive_data = wg.Wiegand()
 	log = ll.LocalLogger()
