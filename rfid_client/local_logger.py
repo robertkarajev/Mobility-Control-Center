@@ -1,5 +1,6 @@
 import os
 import json
+import datetime as dt
 
 # Write, Get , create , delete (TO DO LIST)
 
@@ -10,31 +11,37 @@ import json
 #	When end reached -> delete file // In rfid_reader file
 
 class LocalLogger:
-	def __init__(self, name = 'log'):
+	def __init__(self, name = "log"):
 			self.name = (name+'.txt')
 			self.log = {}
-			self.log['parking_lot'] = []
+
+			self.create_file()
 
 	def create_file(self):
 		if os.path.isfile(self.name):
 			open(self.name,'w')
 		else:
-			print("File doesn't exist.\n','File will be created")
+			print("File doesn't exist.\n File: "+ self.name +" will be created")
 			open(self.name,'w+')
 
-	def write_file(self, id ,coordinates):
-		for i in range(len(id)):
-			self.log['parking_lot'].append({
-				'rfid_tag': id[i] ,
+	def write_file(self, state , rfid_id ,coordinates):
+		self.log[state] = []
+		self.log[state].append({'date & time': str(dt.datetime.now().strftime('%d/%m/%y ---- %H:%M:%S'))})
+		for i in range(len(rfid_id)):
+			self.log[state].append({
+				'rfid_tag': rfid_id[i] ,
 				'coordinates' :coordinates[i]
 			})
 			with open(self.name,'w') as outfile:
 				json.dump(self.log,outfile, indent= 2)
 
-	def get_content(self):
+	def get_content(self, content):
 		with open(self.name) as json_file:
-			self.log = json.load(json_file)
-			return self.log['parking_lot']
+			try:
+				self.log = json.load(json_file)
+				return self.log[str(content)]
+			except:
+				print("Value: "+content+" doesn't exist!")
 
 	def delete_file(self):
 		os.remove(self.name)
