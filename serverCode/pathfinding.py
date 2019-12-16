@@ -202,9 +202,10 @@ class PathFinder:
 
 
 def main():
-    start = (0, 1)
-    end = (0, 4)
-    prevTag = (1, 1)
+    start = (5, 1)
+    end = (5, 2)
+    prevTag = ''
+    entryPoint = (4, 2)
 
     parkingSpaces = [('tag15', (4, 0)), ('tag16', (3, 0)), ('tag17', (2, 0)), ('tag18', (1, 0)), ('tag19', (0, 1)),
                      ('tag20', (0, 2)), ('tag21', (0, 3)), ('tag22', (1, 5)), ('tag23', (2, 5)), ('tag24', (3, 5)),
@@ -218,7 +219,7 @@ def main():
                     ('tag13', (4, 3)), ('tag14', (4, 2))]
 
     pathFinder = PathFinder(parkingSpaces, parkingRoads)
-    path = pathFinder.getPath(start, end, prevTag, '')
+    path = pathFinder.getPath(start, end, prevTag, entryPoint)
     print('Path:', path)
 
 

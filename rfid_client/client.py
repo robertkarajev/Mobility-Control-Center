@@ -23,7 +23,6 @@ class MQTTClient:
         self.user = user               # Connection username
         self.password = password       # Connection password
 
-        # init here to prevent warnings
         self.authorized = None
         self.client = None
         self.name = None
@@ -77,9 +76,12 @@ class MQTTClient:
         self.logger.debug('name set', topic=topFile)
 
     def getNameFile(self):
-        f = open("carName.txt", "r+")
-        self.name = f.read()
-        self.logger.debug('name get', topic=topFile)
+        try:
+            open("carName.txt", 'x')
+        except:
+            f = open("carName.txt", "r+")
+            self.name = f.read()
+            self.logger.debug('name get', topic=topFile)
 
     def clearNameFile(self):
         f = open("carName.txt", "w+")
