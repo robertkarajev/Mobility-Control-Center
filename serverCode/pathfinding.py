@@ -141,27 +141,50 @@ class PathFinder:
             prevCor = []
         direction = ''
         directions = []
-        for index, (y, x) in enumerate(path):
-            if prevCor and index + 1 < len(path):
-                if x == path[index + 1][1]:
-                    if x == prevCor[1]:
-                        if path[index + 1] == prevCor:
-                            direction = 'A'
-                        else:
-                            direction = 'V'
-                    elif x < prevCor[1]:
-                        direction = 'R'
-                    else:
-                        direction = 'L'
-                elif y == path[index + 1][0]:
-                    if y == prevCor[0]:
-                        direction = 'V'
-                    elif y < prevCor[0]:
-                        direction = 'R'
-                    else:
-                        direction = 'L'
-                directions.append(direction)
-            prevCor = (y, x)
+        for i, (y, x) in enumerate(path):
+            if i > 0 or prevCor:
+                if prevCor:
+                    prevy = prevCor[0]
+                    prevx = prevCor[1]
+                else:
+                    prevy = path[i - 1][0]
+                    prevx = path[i - 1][1]
+            else:
+                continue
+            if i < len(path) - 1:
+                nexty = path[i + 1][0]
+                nextx = path[i + 1][1]
+            else:
+                continue
+            if x > nextx:
+                if y > prevy:
+                    direction = 'R'
+                elif y == prevy:
+                    direction = 'V'
+                else:
+                    direction = 'L'
+            if x < nextx:
+                if y > prevy:
+                    direction = 'L'
+                elif y == prevy:
+                    direction = 'V'
+                else:
+                    direction = 'R'
+            if y > nexty:
+                if x > prevx:
+                    direction = 'L'
+                elif x == prevx:
+                    direction = 'V'
+                else:
+                    direction = 'R'
+            if y < nexty:
+                if x > prevx:
+                    direction = 'R'
+                elif x == prevx:
+                    direction = 'V'
+                else:
+                    direction = 'L'
+            directions.append(direction)
         return self.specifyDirections(directions)
 
     def specifyDirections(self, directions):
@@ -173,7 +196,7 @@ class PathFinder:
             else:
                 specificDirections.append(str(distanceTillTurn) + direction)
                 distanceTillTurn = self.distanceBetweenTags
-        if not specificDirections:
+        if distanceTillTurn > self.distanceBetweenTags*1.1:
             specificDirections.append(str(distanceTillTurn) + directions[-1])
         specificDirections.append('arrived')
         return specificDirections
@@ -203,9 +226,9 @@ class PathFinder:
 
 def main():
     start = (5, 1)
-    end = (5, 2)
+    end = (0, 1)
     prevTag = ''
-    entryPoint = (4, 2)
+    entryPoint = (1, 1)
 
     parkingSpaces = [('tag15', (4, 0)), ('tag16', (3, 0)), ('tag17', (2, 0)), ('tag18', (1, 0)), ('tag19', (0, 1)),
                      ('tag20', (0, 2)), ('tag21', (0, 3)), ('tag22', (1, 5)), ('tag23', (2, 5)), ('tag24', (3, 5)),
