@@ -21,7 +21,7 @@ class LocalLogger:
 		if os.path.isfile(self.name):
 			open(self.name,'w')
 		else:
-			print("File doesn't exist.\n File: "+ self.name +" will be created")
+			print("File doesn't exist.\nFile: "+ self.name +" will be created")
 			open(self.name,'w+')
 
 	def write_file(self, state , rfid_id ,coordinates):
