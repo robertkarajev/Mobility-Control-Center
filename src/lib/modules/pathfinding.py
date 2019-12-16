@@ -137,36 +137,79 @@ class PathFinder:
 
     def assignDirectionsToPath(self, path, prevCoordinates=[]):
         direction = ''
-        pathWithDirections = []
-        for index, cor in enumerate(path):
-            y = cor[0]
-            x = cor[1]
-            if prevCoordinates and index + 1 < len(path):
-                if x == path[index + 1][1]:
-                    if x == prevCoordinates[1]:
-                        direction = 'V'
-                    elif x < prevCoordinates[1]:
-                        direction = 'R'
-                    else:
-                        direction = 'L'
-                elif y == path[index + 1][0]:
-                    if y == prevCoordinates[0]:
-                        direction = 'V'
-                    elif y < prevCoordinates[0]:
-                        direction = 'R'
-                    else:
-                        direction = 'L'
+        directions = []
+        for i, (y, x) in enumerate(path):
+            if i > 0 or prevCor:
+                if prevCor:
+                    prevy = prevCor[0]
+                    prevx = prevCor[1]
+                else:
+                    prevy = path[i - 1][0]
+                    prevx = path[i - 1][1]
             else:
-                direction = 'V'
-            pathWithDirections.append([(y, x), direction])
-            prevCoordinates = cor
-        return pathWithDirections
+                continue
+            if i < len(path) - 1:
+                nexty = path[i + 1][0]
+                nextx = path[i + 1][1]
+            else:
+                continue
+            if x > nextx:
+                if y > prevy:
+                    direction = 'R'
+                elif y == prevy:
+                    direction = 'V'
+                else:
+                    direction = 'L'
+            if x < nextx:
+                if y > prevy:
+                    direction = 'L'
+                elif y == prevy:
+                    direction = 'V'
+                else:
+                    direction = 'R'
+            if y > nexty:
+                if x > prevx:
+                    direction = 'L'
+                elif x == prevx:
+                    direction = 'V'
+                else:
+                    direction = 'R'
+            if y < nexty:
+                if x > prevx:
+                    direction = 'R'
+                elif x == prevx:
+                    direction = 'V'
+                else:
+                    direction = 'L'
+            directions.append(direction)
+        return self.specifyDirections(directions)
 
-    def getPath(self, beginCoordinates, endCoordinates, prevCoordinates):
-        generatedGrid = self.setDestitinationInGrid(self.grid, beginCoordinates, endCoordinates)
-        print('Currently used grid:')
-        self.printGrid(generatedGrid)
-        print()
+    def specifyDirections(self, directions):
+        specificDirections = []
+        distanceTillTurn = self.distanceBetweenTags
+        for direction in directions:
+            if direction == 'V':
+                distanceTillTurn += self.distanceBetweenTags
+            else:
+                specificDirections.append(str(distanceTillTurn) + direction)
+                distanceTillTurn = self.distanceBetweenTags
+        if distanceTillTurn > self.distanceBetweenTags*1.1:
+            specificDirections.append(str(distanceTillTurn) + directions[-1])
+        specificDirections.append('arrived')
+        return specificDirections
+
+    def getPath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates):
+        print(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates)
+        if entryCoordinates:
+            print('using entryCoordinates')
+            grid = self.setDestitinationInGrid(self.grid, beginCoordinates, entryCoordinates)
+            self.printGrid(grid)
+            generatedPath = self.generateAStarPath(grid, beginCoordinates, entryCoordinates)
+            generatedPath.append(endCoordinates)
+        else:
+            grid = self.setDestitinationInGrid(self.grid, beginCoordinates, endCoordinates)
+            self.printGrid(grid)
+            generatedPath = self.generateAStarPath(grid, beginCoordinates, endCoordinates)
 
         generatedPath = self.generateAStarPath(generatedGrid, beginCoordinates, endCoordinates)
         pathModifiedWithDirections = self.assignDirectionsToPath(generatedPath, prevCoordinates)
@@ -184,7 +227,9 @@ class PathFinder:
 
 def main():
     start = (5, 1)
-    finish = (2, 5)
+    end = (0, 1)
+    prevTag = ''
+    entryPoint = (1, 1)
 
     parkingSpaces = [('tag15', (4,0)), ('tag16', (3,0)), ('tag17', (2,0)), ('tag18', (1,0)), ('tag19', (0,1)),
                      ('tag20', (0,2)), ('tag21', (0,3)), ('tag22', (1,5)), ('tag23', (2,5)), ('tag24', (3,5)),
