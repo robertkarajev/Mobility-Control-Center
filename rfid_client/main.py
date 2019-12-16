@@ -25,8 +25,8 @@ def main():
 		if not verifier.verify_path(receive_tag_id):
 			if receive_tag_id:
 				path = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
-				log.write_file("arrival",path,"x")
-				verifier.change_path(path)
+				log.write_file("arrival",path[0],"x")
+				verifier.change_path(path[0])
 				verifier.verify_path(receive_tag_id)
 main()
 
