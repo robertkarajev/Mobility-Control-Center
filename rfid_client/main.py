@@ -4,6 +4,7 @@ import configparser as cp
 import mqttBrokerInfo as mbi
 import local_logger as ll
 import logger
+import os
 
 logger = logger.Logger(1)
 
@@ -22,16 +23,32 @@ def main():
 		if receive_tag_id != None:
 			print("Card ID: ", receive_tag_id)
 
-		if not verifier.verify_path(receive_tag_id):
-			if receive_tag_id:
+		result = verifier.verify_path(receive_tag_id)
+		if result == 'lastTag':
+			mqtt.arrivedAtLastTag()
+		if not result:						# Check if the rfid reader is receiving the correct path
+			if receive_tag_id:												
 				path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
-				print(directions)
-				print(path)
-				log.write_file("arrival",path,"x")
+				log.write_file("arrival",path)
 				verifier.change_path(path)
 				verifier.verify_path(receive_tag_id)
+				# geef door: directions
+		else:
+			print(verifier.retrieved_path)
+
 main()
 
+'''
+currently have verify, logger, get previous and current rfid, 
+Something with following the road direction //checker
+Give directions to the vehicle x/direction
+On arrival go backwards or get new path
+
+on depature delete log
+
+
+
+'''
 '''
 # If last rfid_tag has been read, get new path 
 if log.getcontent("arrival")[-1]["rfid_tag"] == receive_data:

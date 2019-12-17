@@ -24,13 +24,12 @@ class LocalLogger:
 			print("File doesn't exist.\nFile: "+ self.name +" will be created")
 			open(self.name,'w+')
 
-	def write_file(self, state , rfid_id ,coordinates):
+	def write_file(self, state , rfid_id):
 		self.log[state] = []
 		self.log[state].append({'date & time': str(dt.datetime.now().strftime('%d/%m/%y ---- %H:%M:%S'))})
 		for i in range(len(rfid_id)):
 			self.log[state].append({
 				'rfid_tag': rfid_id[i] ,
-				'coordinates' :coordinates[i]
 			})
 			with open(self.name,'w') as outfile:
 				json.dump(self.log,outfile, indent= 2)

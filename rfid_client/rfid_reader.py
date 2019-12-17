@@ -80,6 +80,8 @@ class ParkingVerifier:
 		
 	def verify_path (self, msg):
 # If retrieved_path contains any incoming msg from the RFID, remove msg from retrieve_id
+		if msg is self.retrieved_path[-1]:
+			return 'lastTag'
 		if msg in self.retrieved_path:
 			self.retrieved_path.remove(msg)
 			return True
