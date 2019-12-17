@@ -8,6 +8,7 @@ import json
 topDatabase = 'SQLDatabase'
 topMqtt = 'MQTTServerClient'
 
+
 class MqttServerClient:
     def __init__(self, user, password, port, brokerAddress='127.0.0.1', logger=None):
         self.user = user                    # Connection username

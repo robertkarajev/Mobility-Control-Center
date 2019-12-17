@@ -45,7 +45,7 @@ class ParkingManager:
 		try:
 			for (tag, coord) in array:
 				newArr.append((tag, (int(coord[1]), int(coord[3]))))
-		except:
+		except ValueError:
 			for (tag, coord, coord2) in array:
 				newArr.append((tag, (int(coord[1]), int(coord[3]))))
 				arrWithEntry.append((tag, (int(coord[1]), int(coord[3])), (int(coord2[1]), int(coord2[3]))))
@@ -70,7 +70,6 @@ class ParkingManager:
 		return corPath
 
 	def carAuthentication(self, carId):
-		result = None
 		carInDb = self.mySqlConnector.checkCarId(carId)
 		if carInDb:
 			result = False  # carId already in db so new car needs to get new id: return false
@@ -120,7 +119,7 @@ class ParkingManager:
 				entryCoordinates = b
 		return self.generatePath(beginCoordintates, endCoordinates, prevCor, entryCoordinates)
 
-	#this method is called when the car has arrived to its set(parking_space OR exit) destination
+	# this method is called when the car has arrived to its set(parking_space OR exit) destination
 	def registerArrival(self, carId):
 		carState = self.mySqlConnector.getCarState(carId)
 		if carState == 'arriving':
@@ -138,7 +137,7 @@ class ParkingManager:
 		topic = genericMessage[0]
 		message = genericMessage[1]
 
-		#[!!!] #TEST THIS LOGGING CONTENT !!!
+		# [!!!] #TEST THIS LOGGING CONTENT !!!
 		# AUthorization (to authorize cars to make sure no car has the same ID)
 		if topic == 'AU':
 			logger.info(message, 'requests authentication...', topic=topCar)
@@ -166,7 +165,7 @@ class ParkingManager:
 			print('[ERROR]: topic of message not recognised')
 		print()
 
-	#TEST PURPOSES
+	# TEST PURPOSES
 	def getSshLocalBindPort(self):
 		var = cr.getMySqlDatabaseCredentials()
 		sshConn = tsv.SSHTunnel(var[3], 22, var[0], var[1], 'localhost', var[4])
@@ -177,9 +176,10 @@ class ParkingManager:
 		logger.debug('Created ssh tunnel with connection to port:', sshConn.tunnelForwarder.local_bind_port, topic=topMan)
 		return sshConn.tunnelForwarder.local_bind_port
 
+
 manager = ParkingManager()
 while True:
 	manager.processMessage()
-#manager.carAuthentication('rata')
-#manager.registerArrival('java')
-#print(manager.registerArrival('lada'))
+# manager.carAuthentication('rata')
+# manager.registerArrival('java')
+# print(manager.registerArrival('lada'))
