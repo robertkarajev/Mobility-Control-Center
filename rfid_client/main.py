@@ -29,20 +29,22 @@ def main():
 		if result == 'lastTag':
 			mqtt.arrivedAtLastTag()
 			state = "depature"
-		
-		if receive_tag_id == log.get_content("arrival")[-1]:
-			state = "depature"
-
-		if state == "depature" and receive_tag_id == log.get_content("arrival")[-2]:
-			# go backwards
-			get_depature_path(receive_tag_id, previous_tag)
 
 		if not result:						# Check if the rfid reader is receiving the correct path
 			if receive_tag_id:												
-				arrival_path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
-				log.write_file(state,arrival_path)
-				verifier.change_path(arrival_path)
+				path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
+				log.write_file(state,path)
+				verifier.change_path(path)
 				verifier.verify_path(receive_tag_id)
+					
+				if receive_tag_id == log.get_content("arrival")[-1]:
+					state = "depature"
+
+				if state == "depature" and receive_tag_id == log.get_content("arrival")[-2]:
+					# go backwards
+					log.write_file(state,path)
+					verifier.change_path(path)
+				
 				print(verifier.retrieved_path)
 				print(directions)
 				# geef door: directions
@@ -50,14 +52,6 @@ def main():
 		else:
 			print(verifier.retrieved_path)
 
-def get_depature_path(rfid_tag, previous_tag):
-	if rfid_tag == log.get_content("arrival")[-2]:
-			depature_path ,directions = mqtt.getPath(rfid_tag,previous_tag)
-			log.write_file("depature",depature_path)
-			verifier.change_path(depature_path)
-			print(verifier.retrieved_path)
-			print(directions)
-			
 def check_log_on_start_up():
 	try: 
 		log.get_content(state)
