@@ -24,8 +24,10 @@ def main():
 			print("Card ID: ", receive_tag_id)
 
 		result = verifier.verify_path(receive_tag_id)
+		print(result)
 		if result == 'lastTag':
 			mqtt.arrivedAtLastTag()
+
 
 		if not result:						# Check if the rfid reader is receiving the correct path
 			if receive_tag_id:												
