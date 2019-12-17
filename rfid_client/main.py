@@ -16,10 +16,10 @@ mqtt.startConnection()
 verifier = wg.ParkingVerifier([])
 log = ll.LocalLogger()
 receive_data = wg.Wiegand()
-state = "arrival"
 
 def main():
 	# check_log_on_start_up()
+	state = "arrival"
 	while True:
 		receive_tag_id, previous_tag = receive_data.run()
 		if receive_tag_id != None:
@@ -27,8 +27,10 @@ def main():
 
 		result = verifier.verify_path(receive_tag_id)
 		if result == 'lastTag':
+			verifier.change_path([])
 			mqtt.arrivedAtLastTag()
 			state = "depature"
+			
 
 		if not result:						# Check if the rfid reader is receiving the correct path
 			if receive_tag_id:												
@@ -38,13 +40,18 @@ def main():
 				verifier.verify_path(receive_tag_id)
 					
 				if receive_tag_id == log.get_content("arrival")[-1]:
+					print(path,"get new path")
 					state = "depature"
 
-				if state == "depature" and receive_tag_id == log.get_content("arrival")[-2]:
+				if state == "depature" and receive_tag_id == log.get_content("arrival")[-1]:
 					# go backwards
 					log.write_file(state,path)
 					verifier.change_path(path)
-				
+					print(verifier.retrieved_path,"depature")
+
+				if state == "depature" and receive_tag_id == log.get_content("depature")[-1]:
+					print("log deleted, end reached")
+					log.delete_file()
 				print(verifier.retrieved_path)
 				print(directions)
 				# geef door: directions

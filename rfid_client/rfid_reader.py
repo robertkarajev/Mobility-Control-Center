@@ -102,4 +102,5 @@ while True:
 		GPIO.cleanup ()
 		print ("Clean exit by user")
 		sys.exit()
+
 '''
