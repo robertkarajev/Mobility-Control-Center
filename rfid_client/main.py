@@ -14,32 +14,55 @@ mqtt = MQTTClient(mbi[0], mbi[1], mbi[2], mbi[3], logger) # host adress, port, b
 mqtt.createClient()
 mqtt.startConnection()
 verifier = wg.ParkingVerifier([])
+log = ll.LocalLogger()
+receive_data = wg.Wiegand()
+state = "arrival"
 
 def main():
-	receive_data = wg.Wiegand()
-	log = ll.LocalLogger()
+	# check_log_on_start_up()
 	while True:
 		receive_tag_id, previous_tag = receive_data.run()
 		if receive_tag_id != None:
 			print("Card ID: ", receive_tag_id)
 
 		result = verifier.verify_path(receive_tag_id)
-		print(result)
 		if result == 'lastTag':
 			mqtt.arrivedAtLastTag()
+			state = "depature"
+		
+		if receive_tag_id == log.get_content("arrival")[-1]:
+			state = "depature"
 
+		if state == "depature" and receive_tag_id == log.get_content("arrival")[-2]:
+			# go backwards
+			get_depature_path(receive_tag_id, previous_tag)
 
 		if not result:						# Check if the rfid reader is receiving the correct path
 			if receive_tag_id:												
-				path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
-				log.write_file("arrival",path)
-				verifier.change_path(path)
+				arrival_path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
+				log.write_file(state,arrival_path)
+				verifier.change_path(arrival_path)
 				verifier.verify_path(receive_tag_id)
 				print(verifier.retrieved_path)
+				print(directions)
 				# geef door: directions
+
 		else:
 			print(verifier.retrieved_path)
 
+def get_depature_path(rfid_tag, previous_tag):
+	if rfid_tag == log.get_content("arrival")[-2]:
+			depature_path ,directions = mqtt.getPath(rfid_tag,previous_tag)
+			log.write_file("depature",depature_path)
+			verifier.change_path(depature_path)
+			print(verifier.retrieved_path)
+			print(directions)
+			
+def check_log_on_start_up():
+	try: 
+		log.get_content(state)
+	except:
+		log.create_file()
 main()
 
 '''

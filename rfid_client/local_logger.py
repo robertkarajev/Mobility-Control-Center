@@ -15,8 +15,6 @@ class LocalLogger:
 			self.name = (name+'.txt')
 			self.log = {}
 
-			self.create_file()
-
 	def create_file(self):
 		if os.path.isfile(self.name):
 			open(self.name,'w')
