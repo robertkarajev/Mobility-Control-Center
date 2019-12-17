@@ -64,7 +64,8 @@ class MqttServerClient:
             self.logger.error(errorMessage, 'not authorised', topic=topMqtt)
 
     def sendPublish(self, topic, message, qos):
-        self.logger.info('sent message:', '(topic: '+topic+', message: '+str(message)+', qos: '+str(qos)+')', topic=topMqtt)
+        self.logger.info('sent message:', '(topic: '+topic+', message: '+str(message)+', qos: '+str(qos)+')',
+                         topic=topMqtt)
         self.client.publish(topic, json.dumps(message), qos)
 
     def setMsg(self, client, userdata, msg):
@@ -81,8 +82,9 @@ class MqttServerClient:
         self.logger.info('received message from car:', msg, topic=topMqtt)
         return msg
 
+
 class MySqlConnector:
-    def __init__(self, username, password, databaseName, databaseAddress, databasePort, logger = None):
+    def __init__(self, username, password, databaseName, databaseAddress, databasePort, logger=None):
         self.username = username
         self.password = password
         self.databaseName = databaseName
@@ -90,34 +92,36 @@ class MySqlConnector:
         self.databasePort = databasePort
         
         self.logger = logger
-        self.logger.debug('connection arguments:', self.username, self.password, self.databaseAddress, self.databasePort, topic = topDatabase)
+        self.logger.debug('connection arguments:',
+                          self.username, self.password, self.databaseAddress, self.databasePort,
+                          topic=topDatabase)
 
     def startConnection(self):
-        self.connection = mysqlconn.MySQLConnection(username = self.username,
-                                         password = self.password,
-                                         database = self.databaseName,
-                                         host = self.databaseAddress,
-                                         port = self.databasePort)
-        self.logger.info('connection established.', topic = topDatabase)
+        self.connection = mysqlconn.MySQLConnection(username=self.username,
+                                                    password=self.password,
+                                                    database=self.databaseName,
+                                                    host=self.databaseAddress,
+                                                    port=self.databasePort)
+        self.logger.info('connection established.', topic=topDatabase)
 
     def closeConnection(self):
         self.connection.close()
-        self.logger.info('connection closed.', topic = topDatabase)
+        self.logger.info('connection closed.', topic=topDatabase)
 
     def executeQuery(self, query, values = None):
-        self.logger.debug('executing query:', query, 'values:', values, topic = topDatabase)
+        self.logger.debug('executing query:', query, 'values:', values, topic=topDatabase)
         cursor = self.connection.cursor()
         if 'SELECT' in query.upper():
             cursor.execute(query, values)
             result = cursor.fetchall()
             cursor.close()
-            self.logger.debug('end result:', result, topic = topDatabase)
+            self.logger.debug('end result:', result, topic=topDatabase)
             return result
         else:
             cursor.execute(query, values)
             self.connection.commit()
             cursor.close()
-            self.logger.debug('end result:', True, topic = topDatabase)
+            self.logger.debug('end result:', True, topic=topDatabase)
             return True
 
     def checkCarId(self, carId):
@@ -180,6 +184,7 @@ class MySqlConnector:
         query = "SELECT rfid_tag, coordinates, entry_coordinates FROM parking_spaces"
         result = self.executeQuery(query)
         return result
+
 
 '''
     def insertLot(self, id_parking_lot, is_space_available, available_spaces):

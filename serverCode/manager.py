@@ -37,7 +37,7 @@ class ParkingManager:
 		self.spacesWithEntry = spaces[1]
 		self.roads = self.stringToTuple(self.mySqlConnector.getParkingRoads())[0]
 		self.spacesAndRoads = self.spaces + self.roads
-		self.pathFinder = pf.PathFinder(self.spaces, self.roads)
+		self.pathFinder = pf.PathFinder(self.spaces, self.roads, logger)
 
 	def stringToTuple(self, array):
 		newArr = []
@@ -133,6 +133,7 @@ class ParkingManager:
 
 	def processMessage(self):
 		logger.info('listening for messages...', topic=topMsg)
+		print()
 		genericMessage = self.mqttServerClient.getMsg()
 		topic = genericMessage[0]
 		message = genericMessage[1]
