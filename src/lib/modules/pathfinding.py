@@ -23,7 +23,7 @@ class PathFinder:
         # find out max values for grid (making use of spaces + roads)
         biggestY = 0
         biggestX = 0
-        for tag, (y, x) in spaces + roads:
+        for _, (y, x) in spaces + roads:
             if y > biggestY:
                 biggestY = y
             if x > biggestX:

@@ -176,7 +176,7 @@ class MySqlConnector:
         return result
 
     def getParkingSpaces(self):
-        query = "SELECT rfid_tag, coordinates FROM parking_spaces"
+        query = "SELECT rfid_tag, coordinates, entry_coordinates FROM parking_spaces"
         result = self.executeQuery(query)
         return result
 
