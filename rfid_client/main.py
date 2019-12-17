@@ -26,12 +26,14 @@ def main():
 		result = verifier.verify_path(receive_tag_id)
 		if result == 'lastTag':
 			mqtt.arrivedAtLastTag()
+
 		if not result:						# Check if the rfid reader is receiving the correct path
 			if receive_tag_id:												
 				path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
 				log.write_file("arrival",path)
 				verifier.change_path(path)
 				verifier.verify_path(receive_tag_id)
+				print(verifier.retrieved_path)
 				# geef door: directions
 		else:
 			print(verifier.retrieved_path)
