@@ -62,7 +62,6 @@ class Wiegand:
 	def get_previous_id(self, id):
 		
 		if id:	
-			print("here", id)
 			if self.previous_id != id:
 				return_old_id = self.previous_id
 				self.previous_id = id

@@ -10,7 +10,7 @@ import datetime as dt
 
 #	When end reached -> delete file // In rfid_reader file
 
-class LocalLogger:
+class LocalFile:
 	def __init__(self, name = "log"):
 			self.name = (name+'.txt')
 			self.log = {}
@@ -21,7 +21,7 @@ class LocalLogger:
 		if os.path.isfile(self.name):
 			open(self.name,'w')
 		else:
-			print("File doesn't exist.\nFile: "+ self.name +" will be created")
+			self.info(" is created", self.name)
 			open(self.name,'w+')
 
 	def write_file(self, state , rfid_id):
@@ -40,7 +40,13 @@ class LocalLogger:
 				self.log = json.load(json_file)
 				return self.log[str(content)]
 			except:
-				print("Value: "+content+" doesn't exist!")
+				self.error(' does not exists', content)
 
 	def delete_file(self):
 		os.remove(self.name)
+
+	def info(self, info, topic =''):
+		print('[INFO]   ', topic, info)
+
+	def error(self, info, topic =''):
+		print('[ERROR]   ', topic, info)

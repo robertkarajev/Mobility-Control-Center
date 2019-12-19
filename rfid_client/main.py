@@ -2,7 +2,7 @@ from client import MQTTClient
 import rfid_reader as wg
 import configparser as cp
 import mqttBrokerInfo as mbi
-import local_logger as ll
+import local_file as ll
 import logger
 import os
 
@@ -14,8 +14,13 @@ mqtt = MQTTClient(mbi[0], mbi[1], mbi[2], mbi[3], logger) # host adress, port, b
 mqtt.createClient()
 mqtt.startConnection()
 verifier = wg.ParkingVerifier([])
-log = ll.LocalLogger()
+local_file = ll.LocalFile()
 receive_data = wg.Wiegand()
+
+def give_directions(directions):
+	command, direction = directions
+	# something with messaging
+	pass
 
 def main():
 	# check_log_on_start_up()
@@ -23,47 +28,47 @@ def main():
 	while True:
 		receive_tag_id, previous_tag = receive_data.run()
 		if receive_tag_id != None:
-			print("Card ID: ", receive_tag_id)
+			local_file.info(receive_tag_id, " Card id: ")
 
 		result = verifier.verify_path(receive_tag_id)
 		if result == 'lastTag':
 			verifier.change_path([])
 			mqtt.arrivedAtLastTag()
 			state = "depature"
-			
+			if state == "depature" and receive_tag_id == local_file.get_content("depature")[-1]:
+				local_file.info(receive_tag_id, 'Card id: ')
+				local_file.delete_file()
+				local_file.info('', 'End reached')
 
 		if not result:						# Check if the rfid reader is receiving the correct path
 			if receive_tag_id:												
 				path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
-				log.write_file(state,path)
+				local_file.write_file(state,path)
 				verifier.change_path(path)
 				verifier.verify_path(receive_tag_id)
 					
-				if receive_tag_id == log.get_content("arrival")[-1]:
-					print(path,"get new path")
+				if receive_tag_id == local_file.get_content("arrival")[-1]:
+					local_file.info(receive_tag_id, 'Card id: ')
 					state = "depature"
 
-				if state == "depature" and receive_tag_id == log.get_content("arrival")[-1]:
-					# go backwards
-					log.write_file(state,path)
+				if state == "depature" and receive_tag_id == local_file.get_content("arrival")[-1]: # get new path when the vehicle starts up
+					local_file.write_file(state,path)
 					verifier.change_path(path)
+					# go in reverse
 					print(verifier.retrieved_path,"depature")
 
-				if state == "depature" and receive_tag_id == log.get_content("depature")[-1]:
-					print("log deleted, end reached")
-					log.delete_file()
+				if state == "depature" and receive_tag_id == local_file.get_content("arrival")[-2]:
+					# stop going in reverse
+					pass 
+
 				print(verifier.retrieved_path)
 				print(directions)
+				give_directions(directions)
 				# geef door: directions
 
 		else:
 			print(verifier.retrieved_path)
 
-def check_log_on_start_up():
-	try: 
-		log.get_content(state)
-	except:
-		log.create_file()
 main()
 
 '''
