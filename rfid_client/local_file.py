@@ -15,13 +15,14 @@ class LocalFile:
 			self.name = (name+'.txt')
 			self.log = {}
 			self.create_file()
+			self.state = ['update','error','info', 'warning']
 
 
 	def create_file(self):
 		if os.path.isfile(self.name):
 			open(self.name,'w')
 		else:
-			self.info(" is created", self.name)
+			self.info("is created", self.name)
 			open(self.name,'w+')
 
 	def write_file(self, state , rfid_id):
@@ -42,11 +43,13 @@ class LocalFile:
 			except:
 				self.error(' does not exists', content)
 
-	def delete_file(self):
-		os.remove(self.name)
+	def clear_content(self):
+		f = open("carName.txt", "w+")
+        f.write('')
+        f.close()
 
 	def info(self, info, topic =''):
-		print('[INFO]   ', topic, info)
+		print('[INFO]    ', topic, info)
 
 	def error(self, info, topic =''):
 		print('[ERROR]   ', topic, info)

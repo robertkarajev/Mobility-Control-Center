@@ -21,6 +21,28 @@ def give_directions(directions):
 	command, direction = directions
 	# something with messaging
 	pass
+def verify_path(next_tag):
+	result = verifier.verify_path(next_tag)
+	return result
+
+def get_rfid_tag():
+	next_tag, previous_tag = receive_data.run()
+	if next_tag:
+		local_file.info(next_tag, " Card id: ")
+		return next_tag, previous_tag
+
+def local_file_logger():
+	pass
+
+def state(state):
+	if state:
+		pass
+
+def commands():
+	pass
+
+def check_existing_path():
+	pass
 
 def main():
 	# check_log_on_start_up()
@@ -35,10 +57,6 @@ def main():
 			verifier.change_path([])
 			mqtt.arrivedAtLastTag()
 			state = "depature"
-			if state == "depature" and receive_tag_id == local_file.get_content("depature")[-1]:
-				local_file.info(receive_tag_id, 'Card id: ')
-				local_file.delete_file()
-				local_file.info('', 'End reached')
 
 		if not result:						# Check if the rfid reader is receiving the correct path
 			if receive_tag_id:												
@@ -60,7 +78,10 @@ def main():
 				if state == "depature" and receive_tag_id == local_file.get_content("arrival")[-2]:
 					# stop going in reverse
 					pass 
-
+				if state == "depature" and receive_tag_id == local_file.get_content("depature")[-1]:
+					local_file.info(receive_tag_id, 'Card id: ')
+					local_file.delete_file()
+					local_file.info('', 'End reached')
 				print(verifier.retrieved_path)
 				print(directions)
 				give_directions(directions)
@@ -81,18 +102,4 @@ on depature delete log
 
 
 
-'''
-'''
-# If last rfid_tag has been read, get new path 
-if log.getcontent("arrival")[-1]["rfid_tag"] == receive_data:
-	path = mqtt.getPath(receive_tag_id,'get') # Returns a list
-	log.write_file("depature",path,"x")
-
-#If second to last rfid_tag has been read, get new path
-if log.getcontent("arrival")[-2]["rfid_tag"] == receive_data:
-	path = mqtt.getPath(receive_tag_id,'get') # Returns a list
-	log.write_file("depature",path,"x")
-
-if log.getcontent("depature")[-1]["rfid_tag"] == receive_data: # When leaving parkinglot, delete log file
-	log.delete_file()
 '''
