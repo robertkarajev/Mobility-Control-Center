@@ -11,9 +11,9 @@ import datetime as dt
 #	When end reached -> delete file // In rfid_reader file
 
 class LocalFile:
-	def __init__(self, name = "log"):
+	def __init__(self, name = "localinformation"):
 			self.name = (name+'.txt')
-			self.log = {}
+			self.file = {}
 			self.create_file()
 			self.state = ['update','error','info', 'warning']
 
@@ -26,27 +26,30 @@ class LocalFile:
 			open(self.name,'w+')
 
 	def write_file(self, state , rfid_id):
-		self.log[state] = []
-		self.log[state].append({'date & time': str(dt.datetime.now().strftime('%d/%m/%y ---- %H:%M:%S'))})
+		self.file[state] = []
+		self.file[state].append({'date & time': str(dt.datetime.now().strftime('%d/%m/%y ---- %H:%M:%S'))})
 		for i in range(len(rfid_id)):
-			self.log[state].append({
+			self.file[state].append({
 				'rfid_tag': rfid_id[i] ,
 			})
 			with open(self.name,'w') as outfile:
-				json.dump(self.log,outfile, indent= 2)
+				json.dump(self.file,outfile, indent= 2)
 
 	def get_content(self, content):
 		with open(self.name) as json_file:
 			try:
-				self.log = json.load(json_file)
-				return self.log[str(content)]
+				self.file = json.load(json_file)
+				return self.file[str(content)]
 			except:
 				self.error(' does not exists', content)
 
 	def clear_content(self):
-		f = open("carName.txt", "w+")
-        f.write('')
-        f.close()
+		f = open(self.name, "w+")
+		f.write('')
+		f.close()
+
+	def update(self, info, topic =''):
+		print('[UPDATE]  ', topic, info)
 
 	def info(self, info, topic =''):
 		print('[INFO]    ', topic, info)
