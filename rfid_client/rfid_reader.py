@@ -54,7 +54,7 @@ class Wiegand:
 				hex_string = str(hex(int(bin,2)))
 				hex_compressed = hex_string[2:10] # Removing 0x from each incoming card
 				
-				print('hex: ' , hex(int(bin,2)))  
+				# print('hex: ' , hex(int(bin,2)))  
 				
 				self.bits = ''
 				return hex_compressed

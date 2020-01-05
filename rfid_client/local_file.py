@@ -2,21 +2,11 @@ import os
 import json
 import datetime as dt
 
-# Write, Get , create , delete (TO DO LIST)
-
-#	Beginning -> create and write list onto the file 	//	Logger
-#	Destination reached -> Remember second to last tag and request new path // rfid_reader 
-#	OR on startup request on the parkingspot request new path // or when destination reached // validation on the rfid_reader
-
-#	When end reached -> delete file // In rfid_reader file
-
 class LocalFile:
 	def __init__(self, name = "localinformation"):
 			self.name = (name+'.txt')
 			self.file = {}
 			self.create_file()
-			self.state = ['update','error','info', 'warning']
-
 
 	def create_file(self):
 		if os.path.isfile(self.name):

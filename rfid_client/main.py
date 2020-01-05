@@ -19,14 +19,19 @@ verifier = wg.ParkingVerifier([])
 local_file = ll.LocalFile()
 receive_data = wg.Wiegand()
 
-def give_directions(directions):
-	command, direction = directions
+def give_directions(path):
+	message = path[-1]
+	destination = []
+	directions = []
+	direct = ['V', 'R', 'B', 'L']
+	for i in path:
+		for j in direct:
+			if j in i:
+				length = i.split(j)
+				destination.append(length[0]) 
+				directions.append(j)
 	# something with messaging
-	pass
-
-def verify_path(next_tag):
-	result = verifier.verify_path(next_tag)
-	return result
+	return length, directions
 
 def get_rfid_tag():
 	next_tag, previous_tag = receive_data.run()
@@ -34,20 +39,14 @@ def get_rfid_tag():
 		local_file.info(next_tag, " Card id: ")
 		return next_tag, previous_tag
 
-def local_file_logger():
-	pass
-
-def state(state, receive_data):
-	if state is 'depature':
-		if receive_data == local_file.get_content("arrival")[-2]:
-			pass
-
-def commands():
-	pass
-
-def check_existing_path():
-	pass
-
+def commands(command, angle):
+	if command == 'left':
+		print('turning left')
+	if command == 'right':
+		print('turning right')
+	if command == 'reverse':
+		print('turning reverse')
+			
 def start_up():
 	local_list = []
 	if local_file.get_content('depature'):
@@ -59,25 +58,56 @@ def start_up():
 			local_list = local_list.append(i['rfid_tag'])
 	return local_list
 
-'''
+def end_reached(state):
+	if state == 'depature':
+		local_file.clear_content()
+		local_file.info(local_file.get_content("depature")[-1],'End reached, last known rfid: ')
+
 def main():
 	local_save = start_up()
 	verifier.change_path(local_save)
-	state = 'depature' if local.get_content('depature') else 'arrival'
+	state = 'depature' if local_file.get_content('depature') else 'arrival'
 	while True:
 		receive_tag, previous_tag = get_rfid_tag()
 		result = verifier.verify_path(receive_tag)
 
-		if not result:
+		if result == 'lastTag':
+			verifier.change_path([])
+			# mqtt.arrivedAtLastTag()
+			end_reached(state)
+			state = 'arrival' if local_file.get_content('depature')[-1] == receive_tag else 'depature'
+
+		if not result and receive_tag:
+			#path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
+			path = example_cards
+			directions = example_direction
+			local_file.write_file(state,path)
+			verifier.change_path(path)
+			verifier.verify_path(receive_tag)
+			
+			if state == "depature" and receive_tag == local_file.get_content("arrival")[-2]:
+				# stop going in reverse
+				print('stop reverse, try rotating')
+				pass 
+
+			if receive_tag == local_file.get_content("arrival")[-1]:
+				local_file.info(receive_tag, 'Card id: ')
+				state = "depature"
+				if state == "depature":
+					local_file.write_file(state,path)
+					verifier.change_path(path)
+					# go in reverse till the previous tag has been read
+					local_file.update(verifier.retrieved_path,"Depature path: ")
+
+			local_file.update(verifier.retrieved_path,"Arrival path: ")
+			local_file.info(directions,"Directions given: ")
+			give_directions(directions)
 			
 		else:
-			print(verifier.retrieved_path)
+			local_file.info(verifier.retrieved_path, "Arrival path: ")
 		
-
 '''
 def main():
-	# check_log_on_start_up()
-	
 	state = "arrival"
 	while True:
 		receive_tag_id, previous_tag = receive_data.run()
@@ -88,6 +118,7 @@ def main():
 		if result == 'lastTag':
 			verifier.change_path([])
 			mqtt.arrivedAtLastTag()
+			end_reached(state)
 			state = "depature"
 
 		if not result:						# Check if the rfid reader is receiving the correct path
@@ -123,17 +154,5 @@ def main():
 
 		else:
 			print(verifier.retrieved_path)
-
+'''
 main()
-
-'''
-currently have verify, logger, get previous and current rfid, 
-Something with following the road direction //checker
-Give directions to the vehicle x/direction
-On arrival go backwards or get new path
-
-on depature delete log
-
-
-
-'''
