@@ -3,7 +3,7 @@ from datetime import datetime
 import json 
 import time
 
-HOST = "77.164.29.183"   #"145.24.222.194"
+HOST = "77.249.179.218"   #"145.24.222.194"
 PORT = 5000
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,14 +24,14 @@ while counter<5:
     now= datetime.now()
 
     logPackage = {
-        "RFID-ID":"123456798",
+        "RFID-ID":"PAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAA",
         "date"   : str(now.time())
     }
 
     package = json.dumps(logPackage)
     package = package + '\n'
     sock.sendall(package.encode())
-    time.sleep(2)
+    time.sleep(1)
     counter+=1
 
 
