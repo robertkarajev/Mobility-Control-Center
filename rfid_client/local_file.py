@@ -31,7 +31,7 @@ class LocalFile:
 				self.file = json.load(json_file)
 				return self.file[str(content)]
 			except:
-				self.error(' does not exists', content)
+				self.warning(' does not exists', content)
 
 	def clear_content(self):
 		f = open(self.name, "w+")
@@ -43,6 +43,9 @@ class LocalFile:
 
 	def info(self, info, topic =''):
 		print('[INFO]    ', topic, info)
+
+	def warning(self, info, topic =''):
+		print('[WARNING] ', topic, info)
 
 	def error(self, info, topic =''):
 		print('[ERROR]   ', topic, info)
