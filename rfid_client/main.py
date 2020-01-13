@@ -60,10 +60,9 @@ def start_up():
 			local_list = local_list.append(i['rfid_tag'])
 	return local_list
 
-def end_reached(state, rfid):
-	if state == 'Depature' and local_file.get_content("Depature")[-1] == rfid :
-		local_file.info(local_file.get_content("Depature")[-1],'End reached, last known rfid: ')
-		local_file.clear_content()
+def end_reached():
+	local_file.info(local_file.get_content("Depature")[-1],'End reached, last known rfid: ')
+	local_file.clear_content()
 
 def main():
 	local_save = start_up()
@@ -77,7 +76,6 @@ def main():
 		if result == 'lastTag':
 			verifier.change_path([])
 			mqtt.arrivedAtLastTag()
-			end_reached(state,receive_tag)
 			state = 'Depature'
 		
 		if not result:
@@ -96,11 +94,15 @@ def main():
 				if receive_tag == local_file.get_content("Arrival")[-1]:
 					local_file.info(receive_tag, 'Card id: ')
 
-				if state == "depature" and receive_tag == local_file.get_content("arrival")[-1]: # get new path when the vehicle starts up
+				if state == "Depature" and receive_tag == local_file.get_content("Arrival")[-1]: # get new path when the vehicle starts up
 					local_file.write_file(state,path)
 					verifier.change_path(path)
 					# go in reverse
 					local_file.info(directions,"Directions given: ")
+
+				if state == "Depature":
+					if receive_tag == local_file.get_content("Depature")[-1]:
+						end_reached()
 
 				local_file.update(verifier.retrieved_path,(state+" path: "))
 				local_file.info(directions,"Directions given: ")
