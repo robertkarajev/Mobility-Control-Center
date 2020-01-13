@@ -88,13 +88,6 @@ class Pathfinding():
                 # Make sure walkable terrain
                 if maze[node_position[0]][node_position[1]] > 0:
                     continue
-                """
-                knal hier parking idtjes erin
-                work voor later: 
-                        1.vindt index (cordinaat) via de index methode eg= grid.index("d2")
-                        gooi 1 in de bovenstaande if
-                        geef die route 
-                """
                 
 
                 # Create new node
@@ -141,10 +134,28 @@ class Pathfinding():
     def setGrid(self,grid):
         self.grid=grid
 
-    def index_2d(myList, v):
-        for i, x in enumerate(myList):
-            if v in x:
-                return (i, x.index(v))
+    def getDirections(self,path):
+        coor=path[0]
+        ycor=coor[0]
+        xcor=coor[1]
+        pa=[]
+        for index,cor in enumerate(path):
+            cory = cor[0]
+            corx = cor[1]
+            if corx > xcor or corx < xcor :
+                pa.append((cory,corx,"R"))
+                ycor = cor[0]
+                xcor = cor[1]
+            elif cory <= ycor :
+                pa.append((cory,corx,'D'))
+                ycor = cor[0]
+                xcor = cor[1]
+
+
+
+        return pa
+        
+
 
 
 def main():
@@ -163,7 +174,7 @@ def main():
 
     pathfinding=Pathfinding()
     path=pathfinding.astar(grid, start, end)
-    print(path)
+    print(pathfinding.getDirections(path))
 
 
 
