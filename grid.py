@@ -1,5 +1,6 @@
 
 import pygame
+import time
 
 class Visualize(): 
 
@@ -23,15 +24,13 @@ class Visualize():
                         [1, 0, 0, 0, 0, 1, ],
                         [2, 0, 1, 1, 1, 2, ]
                         ]
-    # Create a 2 dimensional array. A two dimensional
-    # array is simply a list of lists.
+        pygame.init()
+        self.WINDOW_SIZE = [270, 270]
+        self.screen = pygame.display.set_mode(self.WINDOW_SIZE)
     
 
     def startPygame(self,routeCor):
-            # Initialize pygame
-        pygame.init()
-        WINDOW_SIZE = [270, 270]
-        screen = pygame.display.set_mode(WINDOW_SIZE)
+        # Initialize pygame
             # Set title of screen
         pygame.display.set_caption("Array Backed Grid")
 
@@ -46,40 +45,13 @@ class Visualize():
             for event in pygame.event.get():  # User did something
                 if event.type == pygame.QUIT:  # If user clicked close
                     done = True  # Flag that we are done so we exit this loop
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    # User clicks the mouse. Get the position
-                    pos = pygame.mouse.get_pos()
-                    # Change the x/y screen coordinates to grid coordinates
-                    column = pos[0] // (WIDTH + MARGIN)
-                    row = pos[1] // (HEIGHT + MARGIN)
-                    # Set that location to one
-                    grid[row][column] = 0
-                    print("Click ", pos, "Grid coordinates: ", row, column)
 
             # Set the screen background
-            screen.fill(self.BLACK)
+            self.screen.fill(self.BLACK)
+            self.draw()
+            self.simRoute(routeCor)
 
-            # Draw the grid
-            for row in range(6):
-                for column in range(6):
-
-                    color = self.WHITE
-                    if self.grid[row][column] == 2:
-                        color = self.RED
-                    if self.grid[row][column] == 1:
-                        color = self.GREEN
-                    if self.grid[row][column] >= 3:
-                        color = self.THEWAY
-                    pygame.draw.rect(screen,
-                                        color,
-                                        [(self.MARGIN + self.WIDTH) * column + self.MARGIN,
-                                        (self.MARGIN + self.HEIGHT) * row + self.MARGIN,
-                                        self.WIDTH,
-                                        self.HEIGHT])
-            # Limit to 60 frames per second
-            clock.tick(60)
-            # Go ahead and update the screen with what we've drawn.
-            pygame.display.flip()
+            done=True
         self.stopPygame()
 
 
@@ -93,6 +65,36 @@ class Visualize():
         return self.grid
 
 
+    # hier moet nog een waiter komen voor rfid tag: als gescaned is dan loop je door
+    def simRoute(self,path):
+        for index,cor in enumerate(path):
+            cory, corx, direction = cor
+            self.grid[cory][corx]=0
+            self.draw()
+            # Go ahead and update the screen with what we've drawn.
+            pygame.display.flip()
+            time.sleep(1)
+            
+
+
+    def draw(self):
+        for row in range(6):
+            for column in range(6):
+                color = self.WHITE
+                if self.grid[row][column] == 2:
+                    color = self.RED
+                if self.grid[row][column] == 1:
+                    color = self.GREEN
+                if self.grid[row][column] >= 3:
+                    color = self.THEWAY
+                if self.grid[row][column] == 0:
+                    color = self.WHITE
+                pygame.draw.rect(self.screen,
+                                    color,
+                                    [(self.MARGIN + self.WIDTH) * column + self.MARGIN,
+                                    (self.MARGIN + self.HEIGHT) * row + self.MARGIN,
+                                    self.WIDTH,
+                                    self.HEIGHT])
 
     def stopPygame(self):
         pygame.quit()
