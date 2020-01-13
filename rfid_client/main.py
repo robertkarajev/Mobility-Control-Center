@@ -61,8 +61,9 @@ def start_up():
 	return local_list
 
 def end_reached():
-	local_file.info(local_file.get_content("Depature")[-1],'End reached, last known rfid: ')
-	local_file.clear_content()
+	if local_file.get_content("Depature"):
+		local_file.info(local_file.get_content("Depature")[-1],'End reached, last known rfid: ')
+		local_file.clear_content()
 
 def main():
 	local_save = start_up()
@@ -76,8 +77,9 @@ def main():
 		if result == 'lastTag':
 			verifier.change_path([])
 			mqtt.arrivedAtLastTag()
+			end_reached()
 			state = 'Depature'
-		
+			
 		if not result:
 			if receive_tag:
 				path, directions = mqtt.getPath(receive_tag, previous_tag) # Returns a list
