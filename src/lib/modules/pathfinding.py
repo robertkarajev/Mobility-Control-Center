@@ -1,3 +1,5 @@
+topPath = 'pathfinding'
+
 class Node:
     """A node class for A* Pathfinding"""
 
@@ -14,16 +16,17 @@ class Node:
 
 
 class PathFinder:
-    def __init__(self, spaces, roads):
-        self.distanceBetweenTags = 100  # in centimeters
+    def __init__(self, spaces, roads, logger=None):
+        self.distanceBetweenTags = 1  # in centimeters
         self.grid = []
         self.generateGrid(spaces, roads)
+        self.logger = logger
 
     def generateGrid(self, spaces, roads):
         # find out max values for grid (making use of spaces + roads)
         biggestY = 0
         biggestX = 0
-        for _, (y, x) in spaces + roads:
+        for tag, (y, x) in spaces + roads:
             if y > biggestY:
                 biggestY = y
             if x > biggestX:
@@ -143,48 +146,51 @@ class PathFinder:
         directions = []
         for i, (y, x) in enumerate(path):
             if i > 0 or prevCor:
-                if prevCor:
-                    prevy = prevCor[0]
-                    prevx = prevCor[1]
-                else:
-                    prevy = path[i - 1][0]
-                    prevx = path[i - 1][1]
+                if i < len(path) - 1:
+                    nexty = path[i + 1][0]
+                    nextx = path[i + 1][1]
+                    if prevCor:
+                        prevy = prevCor[0]
+                        prevx = prevCor[1]
+                        prevCor = ''
+                        if (prevy, prevx) == (nexty, nextx):  # if the next tag is the same as the previous tag drive back
+                            #directions.append('A')
+                            a=0
+                    else:
+                        prevy = path[i - 1][0]
+                        prevx = path[i - 1][1]
+                        if x > nextx:
+                            if y > prevy:
+                                direction = 'R'
+                            elif y == prevy:
+                                direction = 'V'
+                            else:
+                                direction = 'L'
+                        if x < nextx:
+                            if y > prevy:
+                                direction = 'L'
+                            elif y == prevy:
+                                direction = 'V'
+                            else:
+                                direction = 'R'
+                        if y > nexty:
+                            if x > prevx:
+                                direction = 'L'
+                            elif x == prevx:
+                                direction = 'V'
+                            else:
+                                direction = 'R'
+                        if y < nexty:
+                            if x > prevx:
+                                direction = 'R'
+                            elif x == prevx:
+                                direction = 'V'
+                            else:
+                                direction = 'L'
+                        directions.append(direction)
             else:
-                continue
-            if i < len(path) - 1:
-                nexty = path[i + 1][0]
-                nextx = path[i + 1][1]
-            else:
-                continue
-            if x > nextx:
-                if y > prevy:
-                    direction = 'R'
-                elif y == prevy:
-                    direction = 'V'
-                else:
-                    direction = 'L'
-            if x < nextx:
-                if y > prevy:
-                    direction = 'L'
-                elif y == prevy:
-                    direction = 'V'
-                else:
-                    direction = 'R'
-            if y > nexty:
-                if x > prevx:
-                    direction = 'L'
-                elif x == prevx:
-                    direction = 'V'
-                else:
-                    direction = 'R'
-            if y < nexty:
-                if x > prevx:
-                    direction = 'R'
-                elif x == prevx:
-                    direction = 'V'
-                else:
-                    direction = 'L'
-            directions.append(direction)
+                a=0
+        print(directions)
         return self.specifyDirections(directions)
 
     def specifyDirections(self, directions):
@@ -203,17 +209,20 @@ class PathFinder:
 
     def getPath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates):
         print(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates)
-        if entryCoordinates:
-            print('using entryCoordinates')
-            grid = self.setDestitinationInGrid(self.grid, beginCoordinates, entryCoordinates)
-            self.printGrid(grid)
-            generatedPath = self.generateAStarPath(grid, beginCoordinates, entryCoordinates)
-            generatedPath.append(endCoordinates)
+        if beginCoordinates:
+            if entryCoordinates:
+                print('using entryCoordinates')
+                grid = self.setDestitinationInGrid(self.grid, beginCoordinates, entryCoordinates)
+                self.printGrid(grid)
+                generatedPath = self.generateAStarPath(grid, beginCoordinates, entryCoordinates)
+                generatedPath.append(endCoordinates)
+            else:
+                grid = self.setDestitinationInGrid(self.grid, beginCoordinates, endCoordinates)
+                self.printGrid(grid)
+                generatedPath = self.generateAStarPath(grid, beginCoordinates, endCoordinates)
         else:
-            grid = self.setDestitinationInGrid(self.grid, beginCoordinates, endCoordinates)
-            self.printGrid(grid)
-            generatedPath = self.generateAStarPath(grid, beginCoordinates, endCoordinates)
-
+            self.logger.warning('no beginCoordinates', topic=topPath)
+            return [[], []]
         pathModifiedWithDirections = self.assignDirectionsToPath(generatedPath, prevCoordinates)
         return [generatedPath, pathModifiedWithDirections]
 
@@ -226,9 +235,9 @@ class PathFinder:
 
 def main():
     start = (5, 1)
-    end = (0, 1)
-    prevTag = ''
-    entryPoint = (1, 1)
+    end = (2, 3)
+    prevTag = (2, 1)
+    entryPoint = (1, 3)
 
     parkingSpaces = [('tag15', (4, 0)), ('tag16', (3, 0)), ('tag17', (2, 0)), ('tag18', (1, 0)), ('tag19', (0, 1)),
                      ('tag20', (0, 2)), ('tag21', (0, 3)), ('tag22', (1, 5)), ('tag23', (2, 5)), ('tag24', (3, 5)),

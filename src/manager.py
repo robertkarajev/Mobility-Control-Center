@@ -36,7 +36,7 @@ class ParkingManager:
 		self.spacesWithEntry = spaces[1]
 		self.roads = self.stringToTuple(self.mySqlConnector.getParkingRoads())[0]
 		self.spacesAndRoads = self.spaces + self.roads
-		self.pathFinder = pf.PathFinder(self.spaces, self.roads)
+		self.pathFinder = pf.PathFinder(self.spaces, self.roads, logger)
 
 	def stringToTuple(self, array):
 		newArr = []
