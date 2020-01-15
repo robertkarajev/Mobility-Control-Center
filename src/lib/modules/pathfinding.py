@@ -19,14 +19,15 @@ class PathFinder:
     def __init__(self, spaces, roads, logger=None):
         self.distanceBetweenTags = 1  # in centimeters
         self.grid = []
-        self.generateGrid(spaces, roads)
+        self.spaces = spaces
+        self.roads = roads
         self.logger = logger
 
-    def generateGrid(self, spaces, roads):
+    def generateGrid(self):
         # find out max values for grid (making use of spaces + roads)
         biggestY = 0
         biggestX = 0
-        for tag, (y, x) in spaces + roads:
+        for tag, (y, x) in self.spaces + self.roads:
             if y > biggestY:
                 biggestY = y
             if x > biggestX:
@@ -38,7 +39,7 @@ class PathFinder:
             for x in range(biggestX + 1):
                 self.grid[y].append(1)
         # add roads to existing grid
-        for _, (y, x) in roads:
+        for _, (y, x) in self.roads:
             self.grid[y][x] = 0
 
     def setDestitinationInGrid(self, grid, *coordinates):
@@ -209,6 +210,7 @@ class PathFinder:
 
     def getPath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates):
         print(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates)
+        self.generateGrid()
         if beginCoordinates:
             if entryCoordinates:
                 print('using entryCoordinates')
