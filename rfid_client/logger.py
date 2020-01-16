@@ -14,6 +14,7 @@ class Logger:
             self.loggingLevel = levels.index(loggingLevel.lower())
         self.topic = topic
 
+    # a function which makes it possible to print everything
     def print(self, *objects):
         if objects[1]:
             objects = objects[:2] + (':',) + objects[2:]
@@ -22,6 +23,7 @@ class Logger:
         elif self.topic == objects[1]:
             print(*objects)
 
+    # methods which indicate of what importance the log is
     def debug(self, *objects, topic=''):
         if self.loggingLevel <= 0:
             self.print('[DEBUG]   ', topic, *objects)
