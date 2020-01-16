@@ -60,8 +60,8 @@ def start_up():
 			local_list = local_list.append(i['rfid_tag'])
 	return local_list
 
-def end_reached(state):
-	if state == 'Depature':
+def end_reached():
+	if local_file.get_content("Depature"):
 		local_file.info(local_file.get_content("Depature")[-1],'End reached, last known rfid: ')
 		local_file.clear_content()
 
@@ -69,19 +69,20 @@ def main():
 	local_save = start_up()
 	verifier.change_path(local_save)
 	state = 'Depature' if local_file.get_content('Depature') else 'Arrival'
+	
 	while True:
 		receive_tag, previous_tag = get_rfid_tag()
 		result = verifier.verify_path(receive_tag)
 
 		if result == 'lastTag':
-			verifier.change_path(path)
+			verifier.change_path([])
 			mqtt.arrivedAtLastTag()
-			end_reached(state)
+			end_reached()
 			state = 'Depature'
-		
+			
 		if not result:
 			if receive_tag:
-				path, directions = mqtt.getPath(receive_tag_id, previous_tag) # Returns a list
+				path, directions = mqtt.getPath(receive_tag, previous_tag) # Returns a list
 				#path = example_cards if state == 'Arrival' else ["5c7313de","5c716c9e"]
 				#directions = example_direction
 				local_file.write_file(state,path)
@@ -94,12 +95,16 @@ def main():
 
 				if receive_tag == local_file.get_content("Arrival")[-1]:
 					local_file.info(receive_tag, 'Card id: ')
-					state = "Depature"
-					if state == "Depature":
-						local_file.write_file(state,path)
-						verifier.change_path(path)
-						# go in reverse till the previous tag has been read
-						local_file.update(verifier.retrieved_path,"Depature path: ")
+
+				if state == "Depature" and receive_tag == local_file.get_content("Arrival")[-1]: # get new path when the vehicle starts up
+					local_file.write_file(state,path)
+					verifier.change_path(path)
+					# go in reverse
+					local_file.info(directions,"Directions given: ")
+
+				if state == "Depature":
+					if receive_tag == local_file.get_content("Depature")[-1]:
+						end_reached()
 
 				local_file.update(verifier.retrieved_path,(state+" path: "))
 				local_file.info(directions,"Directions given: ")
