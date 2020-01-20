@@ -1,2 +1,2 @@
 # Mobility-Control-Center
-A project at University of Applied Science Rotterdam given as a during the minor for 4th year students
+A system made by 4th year University of Applied Science Rotterdam students for their minor project.
