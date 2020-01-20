@@ -1,8 +1,10 @@
-import serial
+import serial # pySerial
 import time as tm
 import logger as lg
 '''
-Reminder turnoff console in /boot/cmdline.txt by removing baudrate and console parameter
+Reminder remove console in /boot/cmdline.txt by removing baudrate and console parameter
+Only tested in Raspberry pi 3b to Raspberry pi 3b with exchanging RX TX and common ground
+Sudo is required else there will be a permission problem
 '''
 logger = lg.Logger(1)
 
@@ -28,7 +30,7 @@ class SerialConnection:
         incoming_msg = msg if not self.remaining_msg else (self.remaining_msg+msg)
 
         if len(incoming_msg) <= self.byte_limit:
-            if self.seperator in incoming_msg:
+            if self.seperator in incoming_msg:  # Check if the incoming_msg have the seperator
                 self.connection.close()                 # close connection to prevent any other data leaking in
                 return self.filter_message(msg)
             else:
