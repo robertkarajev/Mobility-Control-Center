@@ -20,7 +20,7 @@ local_file = ll.LocalFile()
 receive_data = wg.Wiegand()
 
 def give_directions(path):
-	message = path[-1]
+	#message = path[-1]
 	length = ''
 	destination = []
 	directions = []
