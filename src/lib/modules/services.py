@@ -3,12 +3,13 @@ import time as tm
 import paho.mqtt.client as paho
 import threading
 import json
-# import RPi.GPIO as GPIO
 
+#topic for logger
 topDatabase = 'SQLDatabase'
 topMqtt = 'MQTTServerClient'
 
 class MqttServerClient:
+    #initialize MqttServerClient for communication with Client side
     def __init__(self, user, password, port, brokerAddress='127.0.0.1', logger=None):
         self.user = user                    # Connection username
         self.password = password            # Connection password
@@ -22,6 +23,7 @@ class MqttServerClient:
         self.msgArr = []
         self.client = None
 
+    #create new instace that will communicate with Client side
     def createClient(self):
         self.client = paho.Client("ServerClient")                   # create new instance
         self.client.username_pw_set(self.user, password=self.password)  # set username and password
@@ -29,6 +31,7 @@ class MqttServerClient:
         self.client.on_message = self.setMsg                  # attach function to callback
         self.logger.info('client created.', topic=topMqtt)
 
+    #start connection of MqttServerClient
     def startConnection(self):
         try:
             self.client.connect(self.brokerAddress, port=self.port)
@@ -39,11 +42,13 @@ class MqttServerClient:
         except:
             self.logger.warning('connection failed, retrying...', topic=topMqtt)
 
+    #method which stops all initialized object to properly close the MqttServerClient connection
     def stopConnection(self):
         self.client.disconnect()
         self.client.loop_stop()
         self.logger.info('connection closed.', topic=topMqtt)
 
+    #callback method which is used on connect to subscribed to perticular channels found within this method
     def on_connect(self, client, userdata, flags, connectionResult):
         errorMessage = 'connection refused'
         if connectionResult == 0:
@@ -62,16 +67,20 @@ class MqttServerClient:
         elif connectionResult == 5:
             self.logger.error(errorMessage, 'not authorised', topic=topMqtt)
 
+    #method which publishes a created message to Mqtt Broker
     def sendPublish(self, topic, message, qos):
         self.logger.info('sent message:', '(topic: '+topic+', message: '+str(message)+', qos: '+str(qos)+')', topic=topMqtt)
         self.client.publish(topic, json.dumps(message), qos)
 
+    #set a msg that for publishing
     def setMsg(self, client, userdata, msg):
         topic = msg.topic
         msg = json.loads(str(msg.payload.decode('utf-8')))
         self.msgArr.append([topic, msg])
         self.event.set()
 
+    #read messages that are written to the subscribed topic, this waits for an event
+    # in this case a message that is written to the topic to which this client is subscribed to
     def getMsg(self):
         self.event.wait()
         msg = self.msgArr.pop(0)
@@ -81,6 +90,7 @@ class MqttServerClient:
         return msg
 
 class MySqlConnector:
+    #sets all needed credential information for MySqlConnector
     def __init__(self, username, password, databaseName, databaseAddress, databasePort, logger = None):
         self.username = username
         self.password = password
@@ -91,6 +101,7 @@ class MySqlConnector:
         self.logger = logger
         self.logger.debug('connection arguments:', self.username, self.password, self.databaseAddress, self.databasePort, topic = topDatabase)
 
+    #creates an instance of MySqlConnector which can be used by this class
     def startConnection(self):
         self.connection = mysqlconn.MySQLConnection(username = self.username,
                                          password = self.password,
@@ -99,10 +110,12 @@ class MySqlConnector:
                                          port = self.databasePort)
         self.logger.info('connection established.', topic = topDatabase)
 
+    #close the connection
     def closeConnection(self):
         self.connection.close()
         self.logger.info('connection closed.', topic = topDatabase)
 
+    #used for executing a query
     def executeQuery(self, query, values = None):
         self.logger.debug('executing query:', query, 'values:', values, topic = topDatabase)
         cursor = self.connection.cursor()
@@ -119,62 +132,75 @@ class MySqlConnector:
             self.logger.debug('end result:', True, topic = topDatabase)
             return True
 
+    #checks if a car with given carId exists and return 'True' or 'False' result
     def checkCarId(self, carId):
         query = "SELECT IF(id_car = '"+carId+"', True, False) FROM cars"
         result = self.executeQuery(query)
         return (1,) in result
 
+    #inserts an unregisterd a car into cars table
     def registerCar(self, carId):
         query = "INSERT INTO cars VALUES ('"+carId+"', 'arriving')"
         self.executeQuery(query)
         return True
 
+    #delete car from cars table
     def deleteCar(self, carId):
         query = "DELETE FROM cars WHERE id_car = '"+carId+"'"
         self.executeQuery(query)
 
+    #checks what the state of the car is with given carId
     def getCarState(self, carId):
         query = "SELECT state FROM cars WHERE id_car = '"+carId+"'"
         result = self.executeQuery(query)
         return result[0][0]
 
+    #sets a state for a car
     def setCarState(self, carId, state):
         query = "UPDATE cars SET state = '"+state+"' WHERE id_car = '"+carId+"'"
         self.executeQuery(query)
 
+    #checks whether and which car with given carId is assigend to a parking space
     def getAssignedCarToSpace(self, carId):
         query = "SELECT * FROM parking_spaces WHERE assigned_car = '"+carId+"'"
         result = self.executeQuery(query)
         return result
 
+    #generates a random parking space
     def getRandomParkingSpace(self):
         query = "SELECT * FROM parking_spaces WHERE assigned_car IS NULL ORDER BY RAND() LIMIT 1"
         result = self.executeQuery(query)
         return result[0]
 
-    def assignCarToSpace(self, carId, rfid_tag):
-        query = "UPDATE parking_spaces SET assigned_car = '"+carId+"' WHERE rfid_tag = '"+rfid_tag+"'"
-        self.executeQuery(query)   
-
-    def unassignCarFromSpace(self, car_id):
-        query = "UPDATE parking_spaces SET assigned_car = NULL WHERE assigned_car = '"+car_id+"'"
+    #assings a car with given carId to parking space with given rfidTag
+    def assignCarToSpace(self, carId, rfidTag):
+        query = "UPDATE parking_spaces SET assigned_car = '"+carId+"' WHERE rfid_tag = '"+rfidTag+"'"
         self.executeQuery(query)
 
-    def isEntryPoint(self, rfid_tag):
-        query = "SELECT IF(rfid_tag = '"+rfid_tag+"', True, False) FROM parking_roads WHERE id_unit >= 100000 AND id_unit < 101000"
+    #delete car with given carId from parking space
+    def unassignCarFromSpace(self, carId):
+        query = "UPDATE parking_spaces SET assigned_car = NULL WHERE assigned_car = '"+carId+"'"
+        self.executeQuery(query)
+
+    #checks whether rfid tag with given rfidTag is an entry point returns 'True' or 'False'
+    def isEntryPoint(self, rfidTag):
+        query = "SELECT IF(rfid_tag = '"+rfidTag+"', True, False) FROM parking_roads WHERE id_unit >= 100000 AND id_unit < 101000"
         result = self.executeQuery(query)
         return (1,) in result
 
+    #get exit where cars leave the parking space (exit tiles are configured between the range of 101000 and 102000)
     def getExit(self):
         query = "SELECT * FROM parking_roads WHERE id_unit >= 101000 AND id_unit < 102000"
         result = self.executeQuery(query)
         return result
 
+    #returns list of all roads with their rfid_tag and coordinates
     def getParkingRoads(self):
         query = "SELECT rfid_tag, coordinates FROM parking_roads"
         result = self.executeQuery(query)
         return result
 
+    #returns list of all parking_spaces with their rfid_tag, coordinates and entry_coordinates
     def getParkingSpaces(self):
         query = "SELECT rfid_tag, coordinates, entry_coordinates FROM parking_spaces"
         result = self.executeQuery(query)
@@ -209,63 +235,3 @@ class MySqlConnector:
         values = (id_unit, rfid_tag, location, id_parking_lot)
         self.executeQuery(query, values)
 '''
-
-#!/usr/bin/env python
-#green/data0 is pin 11
-#white/data1 is pin 13
-#For Example Use pin 22 not GPIO 22 and use pin 7 not GPIO 7
-# class Wiegand:
-# 	def __init__ (self, proc_name = 'wiegand', data0 = 11, data1 = 13, bits = ''):
-# 		self.proc_name = proc_name
-# 		self.data0 = data0
-# 		self.data1 = data1
-# 		self.bits = bits
-# 		self.setup()
-	
-# 	def setup (self):
-# 		GPIO.setmode(GPIO.BOARD) #BCM or BOARD
-# 		GPIO.setup (self.data0, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-# 		GPIO.setup (self.data1, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-# 		GPIO.add_event_detect (self.data0, GPIO.FALLING, callback = self.channel_zero)
-# 		GPIO.add_event_detect (self.data1, GPIO.FALLING, callback = self.channel_one)
-
-# 	def channel_zero (self, channel):
-# 		self.bits +='0'
-	
-# 	def channel_one (self, channel):
-# 		self.bits +='1'
-	
-# 	def set_procname(self):
-# 		from ctypes import cdll, byref, create_string_buffer
-# 		libc = cdll.LoadLibrary('libc.so.6')    #Loading a 3rd party library C
-# 		buff = create_string_buffer(len(self.proc_name)+1) #Note: One larger than the name (man prctl says that)
-# 		buff.value = self.proc_name                 #Null terminated string as it should be
-# 		libc.prctl(15, byref(buff), 0, 0, 0) #Refer to "#define" of "/usr/include/linux/prctl.h" for the misterious
-	
-# 	def retrieve_id(self, binary_string = ''):
-# 		first_part = binary_string[0:13]
-# 		second_part = binary_string[13:0]
-# 		parts = [first_part, second_part]
-# 		bitsTo1 = [0, 0]
-# 		index = 0	
-	
-# 		for part in parts:
-# 			bitsTo1[index] = part.count('1')
-# 			index += 1
-		
-# 		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
-# 			bin = binary_string[1:-1] # Leaving out the first and last bit
-# 			if len(bin) == 32:
-# 				hex_string = str(hex(int(bin,2)))
-# 				#n, hex_compressed = hex_string.split('0x')
-# 				hex_compressed = hex_string[2:10] # Removing 0x from each incoming card
-#  				#print('binary: ' + bin)
-# 				#print('decimal: ' , int(bin,2)) 
-# 				print('hex: ' , hex(int(bin,2)))  
-# 				self.bits = ''
-# 				return hex_compressed
-	
-# 	def run(self):
-# 		data = self.retrieve_id(self.bits)
-# 		tm.sleep(0.01)
-# 		return data
