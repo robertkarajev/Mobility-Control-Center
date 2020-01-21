@@ -19,14 +19,16 @@ class PathFinder:
     def __init__(self, spaces, roads, logger=None):
         self.distanceBetweenTags = 1  # in centimeters
         self.grid = []
-        self.generateGrid(spaces, roads)
+        self.spaces = spaces
+        self.roads = roads
         self.logger = logger
 
-    def generateGrid(self, spaces, roads):
-        # find out max values for grid (making use of spaces + roads)
+    # generates a grid on base of the (parking)spaces and roads you give it
+    def generateGrid(self):
+        # find out max values for grid so you know how big it must be
         biggestY = 0
         biggestX = 0
-        for tag, (y, x) in spaces + roads:
+        for tag, (y, x) in self.spaces + self.roads:
             if y > biggestY:
                 biggestY = y
             if x > biggestX:
@@ -38,9 +40,11 @@ class PathFinder:
             for x in range(biggestX + 1):
                 self.grid[y].append(1)
         # add roads to existing grid
-        for _, (y, x) in roads:
+        # 0 =  space which you're able to ride on
+        for _, (y, x) in self.roads:
             self.grid[y][x] = 0
 
+    # sets coordinates in grid to 0 so the pathfinding can find a route (cant go through 1's)
     def setDestitinationInGrid(self, grid, *coordinates):
         for (y, x) in coordinates:
             grid[y][x] = 0
@@ -139,6 +143,7 @@ class PathFinder:
                 # Add the child to the open list
                 open_list.append(child)
 
+    # translate the path to directions so it can be easier understood where the car is going
     def assignDirectionsToPath(self, path, prevCor=None):
         if prevCor is None:
             prevCor = []
@@ -155,7 +160,7 @@ class PathFinder:
                         prevCor = ''
                         if (prevy, prevx) == (nexty, nextx):  # if the next tag is the same as the previous tag drive back
                             #directions.append('A')
-                            a=0
+                            pass
                     else:
                         prevy = path[i - 1][0]
                         prevx = path[i - 1][1]
@@ -188,11 +193,10 @@ class PathFinder:
                             else:
                                 direction = 'L'
                         directions.append(direction)
-            else:
-                a=0
-        print(directions)
         return self.specifyDirections(directions)
 
+    # simplify the directions
+    # [4R, 2L, arrived] means go 4 forward, on the 4th turn right, go 2 forward, on the 2nd turn left, arrived
     def specifyDirections(self, directions):
         specificDirections = []
         distanceTillTurn = self.distanceBetweenTags
@@ -207,11 +211,11 @@ class PathFinder:
         specificDirections.append('arrived')
         return specificDirections
 
+    # main method to get called if you want a path
     def getPath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates):
-        print(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates)
         if beginCoordinates:
+            self.generateGrid()
             if entryCoordinates:
-                print('using entryCoordinates')
                 grid = self.setDestitinationInGrid(self.grid, beginCoordinates, entryCoordinates)
                 self.printGrid(grid)
                 generatedPath = self.generateAStarPath(grid, beginCoordinates, entryCoordinates)
@@ -224,6 +228,7 @@ class PathFinder:
             self.logger.warning('no beginCoordinates', topic=pathfinding)
             return [[], []]
         pathModifiedWithDirections = self.assignDirectionsToPath(generatedPath, prevCoordinates)
+        print('Path:', pathModifiedWithDirections)
         return [generatedPath, pathModifiedWithDirections]
 
     def printGrid(self, grid):
@@ -233,12 +238,18 @@ class PathFinder:
         print()
 
 
+# for testing purposes
 def main():
-    start = (5, 1)
-    end = (2, 3)
-    prevTag = (2, 1)
-    entryPoint = (1, 3)
+    start = (2, 3)      # coordinates of the begin tag
+    end = (0, 4)        # coordinates of the end tag
+    prevTag = (1, 3)    # coordinates before the begin tag (so you know which way the car came from aka the direction)
+    entryPoint = (1, 4) # coordinates of the tag before the end tag (so the path isnt shortcut)
+    start2 = (5, 1)      # coordinates of the begin tag
+    end2 = (2, 3)        # coordinates of the end tag
+    prevTag2 = (1, 3)    # coordinates before the begin tag (so you know which way the car came from aka the direction)
+    entryPoint2 = (1, 3) # coordinates of the tag before the end tag (so the path isnt shortcut)
 
+    # possible test grid
     parkingSpaces = [('tag15', (4, 0)), ('tag16', (3, 0)), ('tag17', (2, 0)), ('tag18', (1, 0)), ('tag19', (0, 1)),
                      ('tag20', (0, 2)), ('tag21', (0, 3)), ('tag22', (1, 5)), ('tag23', (2, 5)), ('tag24', (3, 5)),
                      ('tag25', (4, 5)), ('tag26', (5, 4)), ('tag27', (5, 3)), ('tag28', (5, 2)), ('tag29', (2, 2)),
@@ -252,7 +263,8 @@ def main():
 
     pathFinder = PathFinder(parkingSpaces, parkingRoads)
     path = pathFinder.getPath(start, end, prevTag, entryPoint)
-    print('Path:', path)
+    path = pathFinder.getPath(start2, end2, prevTag2, entryPoint2)
+    #print('Path:', path)
 
 
 if __name__ == '__main__':
