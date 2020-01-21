@@ -7,3 +7,4 @@ simulation/.vscode
 __pycache__
 \src\modules\__pycache__
 mqttBrokerInfo.py
+localinformation.txt

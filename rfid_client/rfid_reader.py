@@ -11,7 +11,7 @@ class Wiegand:
 		self.data0 = data0					# pin for Data 0 
 		self.data1 = data1					# pin for Data 1 
 		self.bits = bits
-		
+		self.bit_limit = 32					# Amount of bits you want to receive either 24 or 32 bits
 		self.previous_id = ""
 		
 		self.setup()
@@ -50,19 +50,19 @@ class Wiegand:
 		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
 			bin = binary_string[1:-1] # Leaving out the first and last bit
 			
-			if len(bin) == 32:
-				hex_string = str(hex(int(bin,2)))
+			if len(bin) == self.bit_limit: 
+				hex_string = str(hex(int(bin,2))) # Incoming message is in binary which needed to convert to int to hex and then string
 				hex_compressed = hex_string[2:10] # Removing 0x from each incoming card
 				
-				print('hex: ' , hex(int(bin,2)))  
-				
-				self.bits = ''
+				# print('hex: ' , hex(int(bin,2)))  
+				self.bits = '' # After receiving all the bits, reset to blank
 				return hex_compressed
-	
+			elif len(bin) >= self.bit_limit:
+				self.bits = ''
+				
 	def get_previous_id(self, id):
 		
 		if id:	
-			print("here", id)
 			if self.previous_id != id:
 				return_old_id = self.previous_id
 				self.previous_id = id
@@ -80,14 +80,18 @@ class ParkingVerifier:
 		
 	def verify_path (self, msg):
 # If retrieved_path contains any incoming msg from the RFID, remove msg from retrieve_id
-		if msg in self.retrieved_path:
-			self.retrieved_path.remove(msg)
-			return True
-	
+		if self.retrieved_path:
+			if msg == self.retrieved_path[-1]: # If rfidtag is the same as the last tag in the given path
+				return 'lastTag'
+			if msg in self.retrieved_path:
+				self.retrieved_path.remove(msg) # If rfidtag corresponds with the given path. This will removes the rfid tag from the list
+				return True
+
 	def change_path (self, path):
 		self.retrieved_path = path
 		
 '''
+# Used for testing the rfidtag or checkin the rfid unique code
 print ("Read card")
 wg = Wiegand ()
 while True:
@@ -99,4 +103,5 @@ while True:
 		GPIO.cleanup ()
 		print ("Clean exit by user")
 		sys.exit()
+
 '''
