@@ -11,7 +11,7 @@ class Wiegand:
 		self.data0 = data0					# pin for Data 0 
 		self.data1 = data1					# pin for Data 1 
 		self.bits = bits
-		
+		self.bit_limit = 32					# Amount of bits you want to receive either 24 or 32 bits
 		self.previous_id = ""
 		
 		self.setup()
@@ -50,14 +50,16 @@ class Wiegand:
 		if bitsTo1[0] % 2 != 0 or bitsTo1[1] % 2 != 1:
 			bin = binary_string[1:-1] # Leaving out the first and last bit
 			
-			if len(bin) == 32:
+			if len(bin) == self.bit_limit: 
 				hex_string = str(hex(int(bin,2))) # Incoming message is in binary which needed to convert to int to hex and then string
 				hex_compressed = hex_string[2:10] # Removing 0x from each incoming card
 				
 				# print('hex: ' , hex(int(bin,2)))  
 				self.bits = '' # After receiving all the bits, reset to blank
 				return hex_compressed
-	
+			elif len(bin) >= self.bit_limit:
+				self.bits = ''
+				
 	def get_previous_id(self, id):
 		
 		if id:	
