@@ -5,13 +5,18 @@ import lib.modules.timer as tm
 import lib.modules.logger as logger
 import lib.modules.pathfinding as pf
 
+# initialized Logger to log all debug, info, warning, critical and error information
 logger = logger.Logger(1)
+
+# topics used to seperatly log different events
 topMan = 'ParkingManager'
 topCar = 'Car'
 topMsg = 'Messanger'
 topAdd = 'addTag'
 
 class ParkingManager:
+	# initialize all the services Mqtt client, MySql client and Pathfinder object that generates paths
+	# this method also queries parking spaces and roads to store them in self.spaces and self.roads
 	def __init__(self):
 		mqttBrokerCredentials = cr.getMqttBrokerCredentials()
 		self.mqttServerClient = sv.MqttServerClient(mqttBrokerCredentials[0],
@@ -38,6 +43,9 @@ class ParkingManager:
 		self.spacesAndRoads = self.spaces + self.roads
 		self.pathFinder = pf.PathFinder(self.spaces, self.roads, logger)
 
+	# help method that converts string to tuples 
+	# (this is used because coordinates are stored as string inside the database 
+	# but are used as tuples while communicating between server and client)
 	def stringToTuple(self, array):
 		newArr = []
 		arrWithEntry = []
@@ -50,16 +58,19 @@ class ParkingManager:
 				arrWithEntry.append((tag, (int(coord[1]), int(coord[3])), (int(coord2[1]), int(coord2[3]))))
 		return [newArr, arrWithEntry]
 
+	# filter the initialized spaces and roads records only to get the coordinates
 	def getCoordinates(self, tag):
 		for x in self.spacesAndRoads:
 			if tag in x:
 				return x[1]
 	
+	# filter the initialized spaces and roads records only to get the tags
 	def getTag(self, cor):
 		for x in self.spacesAndRoads:
 			if cor in x:
 				return x[0]
 
+	# takes generated path with coordinates to convert the coordinates to their respective tags
 	def replaceCoordinatesInPathWithTagIds(self, corPath):
 		for y in range(len(corPath)):
 			for x in self.spacesAndRoads:
@@ -68,10 +79,12 @@ class ParkingManager:
 					break
 		return corPath
 
+	# this method is called when car/client makes contact with server/parking manager,
+	# it registers a car as arriving to the parking lot
 	def carAuthentication(self, carId):
 		carInDb = self.mySqlConnector.checkCarId(carId)
 		if carInDb:
-			result = False  # carId already in db so new car needs to get new id: return false
+			result = False
 		else:
 			self.mySqlConnector.registerCar(carId)
 			logger.info('registered car', carId, 'state as ==arriving==.', topic=topMan)
@@ -79,6 +92,8 @@ class ParkingManager:
 		logger.info('car authentication result:', result, topic=topMan)
 		return result
 	
+	# this method is called when a path needs to be generated, 
+	# and it depending on which state the car happens to be arriving, parked, leaving
 	def generatePath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates):
 		path = self.pathFinder.getPath(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates)
 		path[0] = self.replaceCoordinatesInPathWithTagIds(path[0])
@@ -86,6 +101,8 @@ class ParkingManager:
 		logger.info('generated path :', path, topic=topMan)
 		return path
 
+	# this method takes carId, startTag and prevTag and depending on these it generates needed path
+	# the scanned startTag determines in what state the car is
 	def getSpecificPath(self, carId, startTag, prevTag):
 		beginCoordintates = self.getCoordinates(startTag)
 		entryCoordinates = None
@@ -130,41 +147,35 @@ class ParkingManager:
 			logger.info('unregistered car', carId, 'from parking lot.', topic=topMan)
 			return 'clearName'
 
+	# main method that is constantly running waiting for messages to be processed
 	def processMessage(self):
 		logger.info('listening for messages...', topic=topMsg)
 		genericMessage = self.mqttServerClient.getMsg()
 		topic = genericMessage[0]
 		message = genericMessage[1]
 
-		# [!!!] #TEST THIS LOGGING CONTENT !!!
-		# AUthorization (to authorize cars to make sure no car has the same ID)
+		# Authentication (messages sent to this topic are meant to make sure car registered are unique)
 		if topic == 'AU':
 			logger.info(message, 'requests authentication...', topic=topCar)
 			self.mqttServerClient.sendPublish(message, self.carAuthentication(message), 1)
 
-		# Get Path (a car wants a path (either to parking space or the exit))
+		# Get Path (messages sent to this topic are to whether generate path to the parking space OR exit)
 		elif topic == "GP":
 			logger.info(message, 'requests path...', topic=topCar)
 			carInfo = message.split(',')
 			self.mqttServerClient.sendPublish(carInfo[0], self.getSpecificPath(carInfo[0], carInfo[1], carInfo[2]), 1)
 
-		# Last Tag (the car has arrived at the destination)
+		# Last Tag (messages sent to this topic are to let the parking manager know that the car is arrived at their destination)
 		elif topic == 'LT':
 			logger.info(message, 'requests to register arrival...', topic=topCar)
 			self.mqttServerClient.sendPublish(message, self.registerArrival(message), 1)
-
-		# MIGRATE THIS PEACE TO TEST/PREPERATION
-		# # Read Tag (to add to database (voor opzet))
-		# elif topic == 'RT':
-		# logger.info('tagId being added to database', topic=topAdd)
-		# 	carInfo = message.split(',')
-		# 	print(carInfo)
-		# 	self.mqttServerClient.sendPublish(carInfo[0], self.addTag(carInfo[1]), 1)
+		
+		# When messages is received from unknow client
 		else:
 			print('[ERROR]: topic of message not recognised')
 		print()
 
-	# TEST PURPOSES
+	# this is used because the school network doesn't allow direct connection the server
 	def getSshLocalBindPort(self):
 		var = cr.getMySqlDatabaseCredentials()
 		sshConn = tsv.SSHTunnel(var[3], 22, var[0], var[1], 'localhost', var[4])
@@ -179,6 +190,3 @@ class ParkingManager:
 manager = ParkingManager()
 while True:
 	manager.processMessage()
-# manager.carAuthentication('rata')
-# manager.registerArrival('java')
-# print(manager.registerArrival('lada'))
