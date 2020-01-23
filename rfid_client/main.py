@@ -78,12 +78,12 @@ def main():
 		result = verifier.verify_path(receive_tag)
 
 		if result == 'lastTag':
-			verifier.change_path([]) # Requires a blank list returned else expection will occur
-			mqtt.arrivedAtLastTag() # Changes state from arrival to parked or departure to left the parkinglot
+			verifier.change_path([])  # Requires a blank list returned else expection will occur
+			mqtt.arrivedAtLastTag()  # Changes state from arrival to parked or departure to left the parkinglot
 			state = 'Depature'
-			local_file.write_tags(state, [],[])
+			local_file.write_tags(state, [], [])
 			end_reached()
-			local_file.car_state(state,"True")
+			local_file.car_state(state, "True")
 
 		if not result:
 			if receive_tag:

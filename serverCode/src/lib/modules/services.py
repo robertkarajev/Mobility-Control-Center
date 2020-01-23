@@ -52,6 +52,7 @@ class MqttServerClient:
             self.client.subscribe('LT', 1)  # arrived at Last Tag
             self.client.subscribe('AU', 1)  # AUthorize
             self.client.subscribe('RT', 1)  # Read Tag
+            self.client.subscribe('ST', 1)  # Send Tag
         elif connectionResult == 1:
             self.logger.error(errorMessage, 'incorrect protocol version', topic=topMqtt)
         elif connectionResult == 2:

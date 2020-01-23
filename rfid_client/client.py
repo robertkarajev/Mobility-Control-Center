@@ -165,8 +165,9 @@ class MQTTClient:
                 start = time.time()
         return self.msg
 
+    # sends the tag just read to the server so it can update where the car is
     def sendTag(self, tagId):
-        pass
+        self.sendPublish('ST', self.name + ',' + tagId, 1)
 
     # confirm that you have arrived at the destination
     def arrivedAtLastTag(self):

@@ -155,6 +155,14 @@ class ParkingManager:
 			logger.info(message, 'requests to register arrival...', topic=topCar)
 			self.mqttServerClient.sendPublish(message, self.registerArrival(message), 1)
 
+		elif topic == 'ST':
+			splitMsg = message.split(',')
+			carId = splitMsg[0]
+			tagId = splitMsg[1]
+			tagCoordinates = self.getCoordinates(tagId)
+			# something something update visualization
+			# add to gp(line 51): add the path to visualization
+
 		# MIGRATE THIS PEACE TO TEST/PREPERATION
 		# # Read Tag (to add to database (voor opzet))
 		# elif topic == 'RT':
