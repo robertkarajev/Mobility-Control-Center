@@ -26,9 +26,9 @@
 
 ### Installing for the first time 
 
-1. Install any Raspbian OS (https://www.raspberrypi.org/downloads/) \
+1. Install any Raspbian OS (https://www.raspberrypi.org/downloads/)
 (**Desktop for newer users. For more advanced users use lite.**)
-2. Flash Raspbian OS (https://www.balena.io/etcher/ or any other flash program)\
+2. Flash Raspbian OS (https://www.balena.io/etcher/ or any other flash program)
 3. Power the Raspberry pi with micro-usb and Boot up Raspberry Pi 3b with Raspbian OS
 4. Log in Raspberry Pi with the default user and password (user:pi & pw:raspberry)
 5. Enter raspi-config, select Interfacing Options or locate Interfacing Options (this might differ from each version of OS)
@@ -48,8 +48,9 @@ sudo reboot
 ```
 sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
 ```
-2. Change ssid and psk if there isn't anything written in the file, write this.\
-(_SSID is your network name_)\
+2. Change ssid and psk if there isn't anything written in the file, write this.
+
+(_SSID is your network name_)
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
@@ -67,9 +68,10 @@ psk="yourwifipassword"
 ```
 ifconfig
 ```
-6. Connect your through SSH by using cmd or PuTTY (https://www.putty.org/) \
-(*If you're using cmd, follow step 7 else step 8*) \
-7. ssh {user}@ip\
+6. Connect your through SSH by using cmd or PuTTY (https://www.putty.org/)
+
+(*If you're using cmd, follow step 7 else step 8*)
+7. ssh {user}@ip
 For example:
 ```
 ssh pi@192.123.1.255
@@ -78,7 +80,7 @@ ssh pi@192.123.1.255
 
 ### Connecting with UART
 
-UART cable have 4 different pins, white (RX), green (TX), red (voltage), black (ground) \
+UART cable have 4 different pins, white (RX), green (TX), red (voltage), black (ground)
 ![alt text](https://docs.microsoft.com/en-us/windows/iot-core/media/pinmappingsrpi/rp2_pinout.png)
 1. Connect RX -> TX (pin10), TX -> RX (pin8) 
 2. Connect the usb to the PC 
@@ -90,7 +92,7 @@ UART cable have 4 different pins, white (RX), green (TX), red (voltage), black (
 7. Choose the option to select available drivers from your computer.
 8. In this option you'll get multiple certificate to choose from, choose the oldest certificate (from 200X).
 9. Replug the usb, connect through PuTTY, select COM.
-10. Write the COM where the Raspberry Pi is connected to and fill it at COM with 115200 as baud rate (speed field). \
+10. Write the COM where the Raspberry Pi is connected to and fill it at COM with 115200 as baud rate (speed field).
 Example :
 
 ![alt text](https://i.stack.imgur.com/XgR6I.png)
@@ -102,7 +104,7 @@ To check the correct setup, use wiegand_read_v3.py. This script will return id o
 
 **Hardware**
 
-Either use one of these Wiegand readers or use another RFID scanner \
+Either use one of these Wiegand readers or use another RFID scanner
 * Wiegand 26bits 125kHz ( https://benselectronics.nl/wiegand-26-bit-rfid-long-distance-reader.-125khz/ )
 * Wiegand 34bits 13.56MHz( https://benselectronics.nl/wiegand-34-bit-rfid-reader.-13.56-mhz/)
 
@@ -127,7 +129,14 @@ sudo pip install sshtunnel RPi.GPIO mysql-connector paho-mqtt jsonlib datatime
 
 ![alt text](https://drive.google.com/uc?export=view&id=1OS_gIt10I7cUcFQ2PT3f4dMx125Rtxks)
 
-3. Start up the raspberry pi 
+3. Start up the raspberry pi and copy the wiegand_read_v3.py file/create it by using the following commands
+```
+sudo nano wiegand_read_v3.py
+```
+4. To run this script use, scan the card and it will display hexadecimal values on cmd:
+```
+python3 wiegand_read_v3.py
+```
 
 
 
