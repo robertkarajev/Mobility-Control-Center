@@ -73,6 +73,8 @@ def main():
 
 	while True:
 		receive_tag, previous_tag = get_rfid_tag()
+		if not receive_tag.startswith('5c'):
+			continue
 		result = verifier.verify_path(receive_tag)
 
 		if result == 'lastTag':
