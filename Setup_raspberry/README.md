@@ -1,11 +1,15 @@
 # Raspberry pi 3b setup for Parking management system
 
 ## Getting Started
-[Requirements](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#installing-for-the-first-time)
-[Installing for the first time](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#installing-for-the-first-time)
-[Connecting with SSH](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#connecting-with-ssh)
-[Connecting with UART](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#connecting-with-uart)
-[Test setup] (https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#testing)
+1. [Requirements](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#installing-for-the-first-time)
+
+2. [Installing for the first time](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#installing-for-the-first-time)
+
+3. [Connecting with SSH](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#connecting-with-ssh)
+
+4. [Connecting with UART](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#connecting-with-uart)
+
+5. [Requirements for testing](https://github.com/robertkarajev/Mobility-Control-Center/tree/raspberry_startup/Setup_raspberry#testing)
 
 ### Requirements
 
@@ -18,7 +22,7 @@
 
 **Note after enabling SSH or UART, Raspberry pi can be controlled through SSH or UART and doesn't require Mouse and Keyboard**
 * (Optional) SSH connection
-* (Optional) UART cable
+* (Optional) UART cable **Using UART might cause random crashes for your PC
 
 ### Installing for the first time 
 
@@ -86,23 +90,30 @@ UART cable have 4 different pins, white (RX), green (TX), red (voltage), black (
 7. Choose the option to select available drivers from your computer.
 8. In this option you'll get multiple certificate to choose from, choose the oldest certificate (from 200X).
 9. Replug the usb, connect through PuTTY, select COM.
-10. Write the COM where the Raspberry Pi is connected to and fill it at COM with 115200 as baud rate (speed field).\
+10. Write the COM where the Raspberry Pi is connected to and fill it at COM with 115200 as baud rate (speed field). \
 Example :
+
 ![alt text](https://i.stack.imgur.com/XgR6I.png)
 
 ## Testing
 To check the correct setup, use wiegand_read_v3.py. This script will return id of the card in hexdecimal by executing run() in the module.
 
-### Requirements for testing 
+### Requirements for testing
 
-Either use one of these Wiegand readers or use another RFID scanner
+**Hardware**
+
+Either use one of these Wiegand readers or use another RFID scanner \
 * Wiegand 26bits 125kHz ( https://benselectronics.nl/wiegand-26-bit-rfid-long-distance-reader.-125khz/ )
 * Wiegand 34bits 13.56MHz( https://benselectronics.nl/wiegand-34-bit-rfid-reader.-13.56-mhz/)
 
-** RFID tags can only be used for the corresponding frequency**
+**RFID tags can only be used for the corresponding frequency**
 * RFID tags 125kHz/13.56MHz
+* Raspberry Pi 3b or newer (pin layout may differ with newer versions)
+* Jumpercables
+* Powersupply 9V - 12V
 
-* Raspberry Pi 3b or newer (pin layout may differ with newer versions) 
+**Software**
+
 * Python 3.X or newer version 
 * Python packages
 ** Internet connection is needed to update the raspberry pi**
@@ -110,9 +121,13 @@ Either use one of these Wiegand readers or use another RFID scanner
 ```
 sudo apt-get update && sudo apt-get dist-upgrade
 python install get-pip.py
-sudo pip install sshtunnel RPi.GPIO mysql-connector paho-mqtt jsonlib 
+sudo pip install sshtunnel RPi.GPIO mysql-connector paho-mqtt jsonlib datatime 
 ```
-2. 
+2. After installing, plug the scanner's D0 into GPIO17/pin11 and D1 into GPIO27/pin13 of the raspberry pi 3b, add the power supply and have a common ground with the raspberry pi 3b. See image below.
+
+![alt text](https://drive.google.com/uc?export=view&id=1OS_gIt10I7cUcFQ2PT3f4dMx125Rtxks)
+
+3. Start up the raspberry pi 
 
 
 
