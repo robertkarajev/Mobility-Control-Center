@@ -22,7 +22,7 @@
 
 **Note after enabling SSH or UART, Raspberry pi can be controlled through SSH or UART and doesn't require Mouse and Keyboard**
 * (Optional) SSH connection
-* (Optional) UART cable **Using UART might cause random crashes for your PC
+* (Optional) UART cable **Using UART might cause random crashes for your PC**
 
 ### Installing for the first time 
 
