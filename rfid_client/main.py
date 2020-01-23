@@ -47,26 +47,30 @@ def commands(command, angle): # This function is still in WIP, it can be used fo
 
 # Whenever the vehicle starts up it will check if the vehicle already have a given path/is leaving.
 def start_up(): 
-	local_list = [] 
+	local_list = []
+	local_path = [] 
 	if local_file.get_content('Depature'):
-		for i in (local_file.get_content('Depature')[1:]):
-			local_list = local_list.append(i['rfid_tag']) # Give saved path to the vehicle 
+		local_list = local_file.get_content("Depature")[1].get("rfid_tag") # Give saved path to the vehicle 
+		local_path = local_file.get_content("Depature")[1].get("directions")
 
 	elif local_file.get_content('Arrival'): # if arrival return this path
-		for i in (local_file.get_content('Arrival')[1:]):
-			local_list = local_list.append(i['rfid_tag'])
-	return local_list
+		local_list = local_file.get_content("Arrival")[1].get("rfid_tag")
+		local_path = local_file.get_content("Arrival")[1].get("directions")
+	return local_list, local_path
 
 def end_reached():
-	if local_file.get_content("Depature"):
-		local_file.info(local_file.get_content("Depature")[-1],'End reached, last known rfid: ')
-		local_file.clear_content() # Wipes out localinformation.txt about the path
+	try:
+		if local_file.get_content("Arrival")[2].get("state") == "True":
+			local_file.info(local_file.get_content("Depature")[1].get("rfid_tag")[-1],'End reached, last known rfid: ')
+			local_file.clear_content() # Wipes out localinformation.txt about the path
+	except:
+		pass
 
 def main():
 	local_save = start_up()
 	verifier.change_path(local_save)
-	state = 'Depature' if local_file.get_content('Depature') else 'Arrival'
-	
+	state = 'Depature' if local_file.get_content("Depature") else 'Arrival'
+
 	while True:
 		receive_tag, previous_tag = get_rfid_tag()
 		result = verifier.verify_path(receive_tag)
@@ -74,31 +78,32 @@ def main():
 		if result == 'lastTag':
 			verifier.change_path([]) # Requires a blank list returned else expection will occur
 			mqtt.arrivedAtLastTag() # Changes state from arrival to parked or departure to left the parkinglot
-			end_reached()
 			state = 'Depature'
-			
+			local_file.write_tags(state, [],[])
+			end_reached()
+			local_file.car_state(state,"True")
+
 		if not result:
 			if receive_tag:
 				path, directions = mqtt.getPath(receive_tag, previous_tag) # Returns a path from the server side with directions
-				local_file.write_file(state,path) # Writes the path and state of the vehicle in the localinformation.txt.
+				local_file.write_tags(state,path, directions) # Writes the path and state of the vehicle in the localinformation.txt.
 				verifier.change_path(path) # Updates current path
 				verifier.verify_path(receive_tag) # Check if the vehicle is riding accordingly in comparison with generated path 
 			
-				#if state == "Depature" and receive_tag == local_file.get_content("Arrival")[-2]:
+				#if state == "Depature" and receive_tag == local_file.get_content("Arrival")[1].get("rfid_tag")[-2]:
 				#	print('stop reverse, try rotating') 
-			
-				if receive_tag == local_file.get_content("Arrival")[-1]:
-					local_file.info(receive_tag, 'Card id: ')
+				try:
+					if receive_tag == local_file.get_content("Arrival")[1].get("rfid_tag")[-1]:
+						local_file.info(receive_tag, 'Card id: ')
+						state = "Depature"
 
-				if state == "Depature" and receive_tag == local_file.get_content("Arrival")[-1]: # get new path when the vehicle starts up
-					local_file.write_file(state,path)
-					verifier.change_path(path)
-					local_file.info(directions,"Directions given: ")
+					if state == "Depature" and receive_tag == local_file.get_content("Arrival")[1].get("rfid_tag")[-1]: # get new path when the vehicle starts up
+						local_file.write_tags(state,path, directions)
+						verifier.change_path(path) 	
+						local_file.info(directions,"Directions given: ")
 
-				if state == "Depature":
-					if receive_tag == local_file.get_content("Depature")[-1]:
-						end_reached()
-
+				except:
+					local_file.warning(state, "doesn't exist.")
 				local_file.update(verifier.retrieved_path,(state+" path: "))
 				local_file.info(directions,"Directions given: ")
 				give_directions(directions)
