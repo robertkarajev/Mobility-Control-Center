@@ -38,11 +38,13 @@ class PathFinder:
         for y in range(biggestY + 1):
             self.grid.append([])
             for x in range(biggestX + 1):
-                self.grid[y].append(1)
+                self.grid[y].append(2)
         # add roads to existing grid
         # 0 =  space which you're able to ride on
         for _, (y, x) in self.roads:
             self.grid[y][x] = 0
+        for _, (y, x) in self.spaces:
+            self.grid[y][x] = 1
 
     # sets coordinates in grid to 0 so the pathfinding can find a route (cant go through 1's)
     def setDestitinationInGrid(self, grid, *coordinates):
