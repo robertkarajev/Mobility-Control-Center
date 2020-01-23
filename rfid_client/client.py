@@ -165,6 +165,9 @@ class MQTTClient:
                 start = time.time()
         return self.msg
 
+    def sendTag(self, tagId):
+        pass
+
     # confirm that you have arrived at the destination
     def arrivedAtLastTag(self):
         self.sendPublish('LT', self.name, 1)
