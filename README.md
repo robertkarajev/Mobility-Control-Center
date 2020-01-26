@@ -1,3 +1,9 @@
+# Intelligent Mobility
+A minor at University of Applied Science Rotterdam for 4th year students.
+
+# Smart Urban Parking
+Is an autonomous parking system thats uses Rfid-tags to navigate inside a parking lot that automatically registers arriving cars to random generated parking spaces.
+
 # Dependencies
 ```
 python 3.X+
