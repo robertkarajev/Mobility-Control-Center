@@ -73,9 +73,12 @@ def main():
 
 	while True:
 		receive_tag, previous_tag = get_rfid_tag()
-		if not receive_tag.startswith('5c'):
+		if receive_tag and not receive_tag.startswith('5c'):
 			continue
 		result = verifier.verify_path(receive_tag)
+
+		if result:
+			mqtt.sendTag(receive_tag)
 
 		if result == 'lastTag':
 			verifier.change_path([])  # Requires a blank list returned else expection will occur

@@ -178,7 +178,7 @@ class ParkingManager:
 			tagId = splitMsg[1]
 			tagCoordinates = self.getCoordinates(tagId)
 			self.simulator.simulateCarMovement()
-
+			print('received tag')
 			# something something update visualization
 			# add to gp(line 51): add the path to visualization
 
