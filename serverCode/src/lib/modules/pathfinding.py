@@ -214,14 +214,20 @@ class PathFinder:
         return specificDirections
 
     # main method to get called if you want a path
-    def getPath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates):
+    def getPath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates, entryAtEnd):
         if beginCoordinates:
             self.generateGrid()
             if entryCoordinates:
-                grid = self.setDestitinationInGrid(self.grid, beginCoordinates, entryCoordinates)
-                self.printGrid(grid)
-                generatedPath = self.generateAStarPath(grid, beginCoordinates, entryCoordinates)
-                generatedPath.append(endCoordinates)
+                if entryAtEnd:
+                    grid = self.setDestitinationInGrid(self.grid, beginCoordinates, entryCoordinates)
+                    self.printGrid(grid)
+                    generatedPath = self.generateAStarPath(grid, beginCoordinates, entryCoordinates)
+                    generatedPath.append(endCoordinates)
+                else:
+                    grid = self.setDestitinationInGrid(self.grid, entryCoordinates)
+                    self.printGrid(grid)
+                    generatedPath = self.generateAStarPath(grid, entryCoordinates, endCoordinates)
+                    generatedPath.insert(0, beginCoordinates)
             else:
                 grid = self.setDestitinationInGrid(self.grid, beginCoordinates, endCoordinates)
                 self.printGrid(grid)
@@ -242,10 +248,11 @@ class PathFinder:
 
 # for testing purposes
 def main():
-    start = (2, 3)      # coordinates of the begin tag
+    start = (3, 3)      # coordinates of the begin tag
     end = (0, 4)        # coordinates of the end tag
-    prevTag = (1, 3)    # coordinates before the begin tag (so you know which way the car came from aka the direction)
-    entryPoint = (1, 4) # coordinates of the tag before the end tag (so the path isnt shortcut)
+    prevTag = (4, 3)    # coordinates before the begin tag (so you know which way the car came from aka the direction)
+    entryPoint = (4, 3) # coordinates of the tag before the end tag (so the path isnt shortcut)
+    entryAtEnd = False
     start2 = (5, 1)      # coordinates of the begin tag
     end2 = (2, 3)        # coordinates of the end tag
     prevTag2 = (1, 3)    # coordinates before the begin tag (so you know which way the car came from aka the direction)
@@ -264,9 +271,9 @@ def main():
                     ('tag13', (4, 3)), ('tag14', (4, 2))]
 
     pathFinder = PathFinder(parkingSpaces, parkingRoads)
-    path = pathFinder.getPath(start, end, prevTag, entryPoint)
-    path = pathFinder.getPath(start2, end2, prevTag2, entryPoint2)
-    #print('Path:', path)
+    path = pathFinder.getPath(start, end, prevTag, entryPoint, entryAtEnd)
+    #path = pathFinder.getPath(start2, end2, prevTag2, entryPoint2)
+    print('Path:', path)
 
 
 if __name__ == '__main__':

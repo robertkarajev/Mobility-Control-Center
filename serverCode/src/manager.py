@@ -4,6 +4,7 @@ import lib.testmodules.testservices as tsv
 import lib.modules.timer as tm
 import lib.modules.logger as logger
 import lib.modules.pathfinding as pf
+import lib.modules.grid as sim
 
 logger = logger.Logger(1)
 topMan = 'ParkingManager'
@@ -38,6 +39,14 @@ class ParkingManager:
 		self.roads = self.stringToTuple(self.mySqlConnector.getParkingRoads())[0]
 		self.spacesAndRoads = self.spaces + self.roads
 		self.pathFinder = pf.PathFinder(self.spaces, self.roads, logger)
+		self.pathFinder.generateGrid()
+		#path = [(5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1)]
+		squareHeight = 45
+		squareWidth = 45
+
+		self.simulator = sim.Simulator(self.pathFinder.grid, squareHeight, squareWidth)
+		#self.simulator.setPath(path)
+		#self.simulator.startSimulation()
 
 	def stringToTuple(self, array):
 		newArr = []
@@ -80,8 +89,11 @@ class ParkingManager:
 		logger.info('car authentication result:', result, topic=topMan)
 		return result
 	
-	def generatePath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates):
-		path = self.pathFinder.getPath(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates)
+	def generatePath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates, entryAtEnd):
+		path = self.pathFinder.getPath(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates, entryAtEnd)
+		self.simulator.setPath(path[0].copy())
+		self.simulator.setPathColor()
+		self.simulator.simulateCarMovement()
 		path[0] = self.replaceCoordinatesInPathWithTagIds(path[0])
 		logger.info('path generation successful.', topic=topMan)
 		logger.info('generated path :', path, topic=topMan)
@@ -90,6 +102,7 @@ class ParkingManager:
 	def getSpecificPath(self, carId, startTag, prevTag):
 		beginCoordintates = self.getCoordinates(startTag)
 		entryCoordinates = None
+		entryAtEnd = None
 
 		prevCor = ''
 		if prevTag:
@@ -117,7 +130,11 @@ class ParkingManager:
 		for _, a, b in self.spacesWithEntry:
 			if a == endCoordinates:
 				entryCoordinates = b
-		return self.generatePath(beginCoordintates, endCoordinates, prevCor, entryCoordinates)
+				entryAtEnd = True
+			if a == beginCoordintates:
+				entryCoordinates = b
+				entryAtEnd = False
+		return self.generatePath(beginCoordintates, endCoordinates, prevCor, entryCoordinates, entryAtEnd)
 
 	# this method is called when the car has arrived to its set(parking_space OR exit) destination
 	def registerArrival(self, carId):
@@ -160,6 +177,8 @@ class ParkingManager:
 			carId = splitMsg[0]
 			tagId = splitMsg[1]
 			tagCoordinates = self.getCoordinates(tagId)
+			self.simulator.simulateCarMovement()
+
 			# something something update visualization
 			# add to gp(line 51): add the path to visualization
 
