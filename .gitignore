@@ -6,5 +6,5 @@ simulation/__pycache__
 simulation/.vscode
 __pycache__
 \src\modules\__pycache__
-mqttBrokerInfo.py
 localinformation.txt
+src/lib/modules/credentials.py

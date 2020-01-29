@@ -41,8 +41,8 @@ class ParkingManager:
 		self.pathFinder = pf.PathFinder(self.spaces, self.roads, logger)
 		self.pathFinder.generateGrid()
 		#path = [(5, 1), (4, 1), (3, 1), (2, 1), (1, 1), (0, 1)]
-		squareHeight = 45
-		squareWidth = 45
+		squareHeight = 100
+		squareWidth = 100
 
 		self.simulator = sim.Simulator(self.pathFinder.grid, squareHeight, squareWidth)
 		#self.simulator.setPath(path)
