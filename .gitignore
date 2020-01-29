@@ -1,0 +1,9 @@
+.vscode
+server/src/lib/__pycache__
+server/src/lib/modules/__pycache__
+server/src/lib/testmodules/__pycache__
+
+server/src/logtest.py
+server/src/testselectquery.py
+server/src/lib/modules/credentials.py
+setup_raspberry/__pycache__
