@@ -1,8 +1,8 @@
 .vscode
-src/lib/__pycache__
-src/lib/modules/__pycache__
-src/lib/testmodules/__pycache__
+server/src/lib/__pycache__
+server/src/lib/modules/__pycache__
+server/src/lib/testmodules/__pycache__
 
-src/logtest.py
-src/testselectquery.py
-src/lib/modules/credentials.py
+server/src/logtest.py
+server/src/testselectquery.py
+server/src/lib/modules/credentials.py
