@@ -4,6 +4,7 @@ import lib.testmodules.testservices as tsv
 import lib.modules.timer as tm
 import lib.modules.logger as logger
 import lib.modules.pathfinding as pf
+import lib.modules.grid as sim
 
 # initialized Logger to log all debug, info, warning, critical and error information
 logger = logger.Logger(1)
@@ -42,6 +43,12 @@ class ParkingManager:
 		self.roads = self.stringToTuple(self.mySqlConnector.getParkingRoads())[0]
 		self.spacesAndRoads = self.spaces + self.roads
 		self.pathFinder = pf.PathFinder(self.spaces, self.roads, logger)
+
+		self.pathFinder.generateGrid()
+		squareHeight = 100
+		squareWidth = 100
+
+		self.simulator = sim.Simulator(self.pathFinder.grid, squareHeight, squareWidth)
 
 	# help method that converts string to tuples 
 	# (this is used because coordinates are stored as string inside the database 
@@ -84,7 +91,7 @@ class ParkingManager:
 	def carAuthentication(self, carId):
 		carInDb = self.mySqlConnector.checkCarId(carId)
 		if carInDb:
-			result = False
+			result = False  # carId already in db so new car needs to get new id: return false
 		else:
 			self.mySqlConnector.registerCar(carId)
 			logger.info('registered car', carId, 'state as ==arriving==.', topic=topMan)
@@ -94,8 +101,11 @@ class ParkingManager:
 	
 	# this method is called when a path needs to be generated, 
 	# and it depending on which state the car happens to be arriving, parked, leaving
-	def generatePath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates):
-		path = self.pathFinder.getPath(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates)
+	def generatePath(self, beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates, entryAtEnd):
+		path = self.pathFinder.getPath(beginCoordinates, endCoordinates, prevCoordinates, entryCoordinates, entryAtEnd)
+		self.simulator.setPath(path[0].copy())
+		self.simulator.setPathColor()
+		self.simulator.simulateCarMovement()
 		path[0] = self.replaceCoordinatesInPathWithTagIds(path[0])
 		logger.info('path generation successful.', topic=topMan)
 		logger.info('generated path :', path, topic=topMan)
@@ -106,6 +116,7 @@ class ParkingManager:
 	def getSpecificPath(self, carId, startTag, prevTag):
 		beginCoordintates = self.getCoordinates(startTag)
 		entryCoordinates = None
+		entryAtEnd = None
 
 		prevCor = ''
 		if prevTag:
@@ -133,7 +144,11 @@ class ParkingManager:
 		for _, a, b in self.spacesWithEntry:
 			if a == endCoordinates:
 				entryCoordinates = b
-		return self.generatePath(beginCoordintates, endCoordinates, prevCor, entryCoordinates)
+				entryAtEnd = True
+			if a == beginCoordintates:
+				entryCoordinates = b
+				entryAtEnd = False
+		return self.generatePath(beginCoordintates, endCoordinates, prevCor, entryCoordinates, entryAtEnd)
 
 	# this method is called when the car has arrived to its set(parking_space OR exit) destination
 	def registerArrival(self, carId):
@@ -169,12 +184,19 @@ class ParkingManager:
 		elif topic == 'LT':
 			logger.info(message, 'requests to register arrival...', topic=topCar)
 			self.mqttServerClient.sendPublish(message, self.registerArrival(message), 1)
-		
-		# When messages is received from unknow client
+
+		elif topic == 'ST':
+			splitMsg = message.split(',')
+			carId = splitMsg[0]
+			tagId = splitMsg[1]
+			tagCoordinates = self.getCoordinates(tagId)
+			self.simulator.simulateCarMovement()
+			print('received tag')
 		else:
-			print('[ERROR]: topic of message not recognised')
+			logger.error('topic of message not recognised', topic=topMsg)
 		print()
 
+	# TEST PURPOSES
 	# this is used because the school network doesn't allow direct connection the server
 	def getSshLocalBindPort(self):
 		var = cr.getMySqlDatabaseCredentials()
